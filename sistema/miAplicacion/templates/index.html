@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Inicio{% endblock %}
+
+{% block extra_styles %}
+    <style>
+        .main-banner {
+            background-image: url('{% static 'img/encabezado1.png' %}');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            height: 50vh; /* Ocupa el 50% de la altura de la ventana */
+            
+            margin: 0; /* Elimina cualquier margen predeterminado */
+        }
+
+        .main-content {
+            text-align: center;
+            padding: 2rem 0;
+            background-color: #f8f9fa; /* Un color de fondo claro para contrastar con la imagen */
+        }
+
+        .main-content h1 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .main-content p {
+            font-size: 1.25rem;
+            color: #666;
+        }
+
+        .main-content .btn {
+            font-size: 1.25rem;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="main-banner"></div> <!-- Esta es solo la imagen de fondo -->
+
+<div class="main-content">
+    <div class="container">
+        <h1 class="display-4">Bienvenido a la Ferretería</h1>
+        <p class="lead">Encuentra todo lo que necesitas para tus proyectos de construcción y remodelación.</p>
+
+    </div>
+</div>
+{% endblock %}
+
