@@ -1,4 +1,5 @@
-from django.db import models
+import random
+from django.db import models, transaction
 from django.db.models import Sum
 from django.utils import timezone
 
@@ -13,6 +14,7 @@ class Cliente(models.Model):
     def __str__(self):
         return f"{self.nombre} {self.apellido}"
 
+
 class Categoria(models.Model):
     """
     Modelo que representa una categoría de productos.
@@ -23,18 +25,16 @@ class Categoria(models.Model):
     def __str__(self):
         return self.nombre
 
+
 class Proveedor(models.Model):
     nombre = models.CharField(max_length=100)
-    tipo_producto = models.CharField(max_length=100,default='')
-    telefono = models.CharField(max_length=15,default='')
+    tipo_producto = models.CharField(max_length=100, default='')
+    telefono = models.CharField(max_length=15, default='')
     email = models.EmailField(default='', blank=True)
     direccion = models.CharField(max_length=200, default='', blank=True)
 
     def __str__(self):
         return self.nombre
-
-
-
 
 
 class MovimientoStock(models.Model):
@@ -50,21 +50,20 @@ class MovimientoStock(models.Model):
     tipo = models.CharField(max_length=10, choices=TIPO_MOVIMIENTO)
     cantidad = models.IntegerField()
     fecha = models.DateTimeField(auto_now_add=True)
-    observaciones = models.TextField(blank=True, null=True)
+    comprobante = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return f'{self.tipo} - {self.producto.nombre} - {self.cantidad}'
 
     def save(self, *args, **kwargs):
-     super().save(*args, **kwargs)  # Llamar primero al método save original
+        super().save(*args, **kwargs)  # Llamar primero al método save original
 
-     if self.tipo == 'entrada':
-        self.producto.cantidad_stock += self.cantidad
-     elif self.tipo == 'salida':
-        self.producto.cantidad_stock -= self.cantidad
+        if self.tipo == 'entrada':
+            self.producto.cantidad_stock += self.cantidad
+        elif self.tipo == 'salida':
+            self.producto.cantidad_stock -= self.cantidad
 
-     self.producto.save()  # Guardar los cambios en el producto
-
+        self.producto.save()  # Guardar los cambios en el producto
 
 
 class Pedido(models.Model):
@@ -86,7 +85,7 @@ class DetallePedido(models.Model):
     pedido = models.ForeignKey('Pedido', on_delete=models.CASCADE, related_name='detalles')
     producto = models.ForeignKey('Producto', on_delete=models.CASCADE)
     cantidad = models.IntegerField()
-    precio_unitario = models.DecimalField(max_digits=10, decimal_places=2,default=0.00)
+    precio_unitario = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
 
     def __str__(self):
         return f'{self.producto} - {self.cantidad} unidades'
@@ -98,7 +97,7 @@ class Producto(models.Model):
     """
     nombre = models.CharField(max_length=100)
     descripcion = models.TextField()
-    precio = models.DecimalField(max_digits=10, decimal_places=2,default=0.00)
+    precio = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     cantidad_stock = models.IntegerField()
     categoria = models.ForeignKey('Categoria', on_delete=models.SET_NULL, null=True)
     fecha_creacion = models.DateField(auto_now_add=True)
@@ -108,48 +107,53 @@ class Producto(models.Model):
     def __str__(self):
         return self.nombre
 
-class MedioDePago(models.Model): 
-    TIPO_PAGO_CHOICES = [ 
-                    ('EF', 'Efectivo'), 
-                    ('TC', 'Tarjeta de Crédito'), 
-                    ('TD', 'Tarjeta de Débito'),
-                    ('TR', 'Transferencia Bancaria'),
-                ] # Puedes agregar más opciones aquí 
+
+class MedioDePago(models.Model):
+    TIPO_PAGO_CHOICES = [
+        ('EF', 'Efectivo'),
+        ('TC', 'Tarjeta de Crédito'),
+        ('TD', 'Tarjeta de Débito'),
+        ('TR', 'Transferencia Bancaria'),
+    ]  # Puedes agregar más opciones aquí
     nombre = models.CharField(max_length=2, choices=TIPO_PAGO_CHOICES, unique=True)
-    
-    def __str__(self): 
+
+    def __str__(self):
         return self.get_nombre_display()
+
 
 class Venta(models.Model):
     fecha = models.DateField(default=timezone.now)
-    numero_comprobante = models.CharField(max_length=10,default='')
+    numero_comprobante = models.CharField(max_length=13, unique=True, verbose_name="Número de Comprobante")
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, default=None, null=True)
     medio_de_pago = models.ForeignKey(MedioDePago, on_delete=models.CASCADE, default=None, null=True)
     detalle_ventas = models.ManyToManyField(Producto, through="DetalleVenta")
-    importe_total = models.DecimalField(null=False, max_digits=10, decimal_places=2,default=0.00)
+    importe_total = models.DecimalField(null=False, max_digits=10, decimal_places=2, default=0.00)
 
     def __str__(self):
         return str(self.numero_comprobante)
-    
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        
-        # Calcular el importe total
+
+    def calcular_importe_total(self):
+        # Calcular el importe total sumando los precios de los productos en los detalles de venta
         total = sum(detalle.cantidad * detalle.producto.precio for detalle in self.detalleventa_set.all())
         self.importe_total = total
-        super().save(update_fields=['importe_total'])
+        self.save(update_fields=['importe_total'])
 
-        # Crear movimientos de stock
-        for detalle in self.detalleventa_set.all():
-            producto = detalle.producto
-            cantidad_vendida = detalle.cantidad
+    @transaction.atomic
+    def save(self, *args, **kwargs):
+        # Generar número de comprobante si no existe
+        if not self.numero_comprobante:
+            self.numero_comprobante = self.generar_numero_comprobante()
 
-            MovimientoStock.objects.create(
-                producto=producto,
-                tipo='salida',
-                cantidad=cantidad_vendida,
-                observaciones=f"Venta {self.numero_comprobante}"
-            )
+        super(Venta, self).save(*args, **kwargs)
+        # Nota: la lógica de actualización de stock ahora se maneja completamente en las señales
+
+    @staticmethod
+    def generar_numero_comprobante():
+        while True:
+            numero = str(random.randint(10**12, 10**13 - 1))  # Genera un número de 13 dígitos
+            if not Venta.objects.filter(numero_comprobante=numero).exists():  # Verifica que no se repita
+                return numero
+
 
 class DetalleVenta(models.Model):
     venta = models.ForeignKey(Venta, on_delete=models.CASCADE, default=None, null=True)
@@ -161,6 +165,16 @@ class DetalleVenta(models.Model):
         producto_str = str(self.producto) if self.producto else "No Producto"
         cantidad_str = str(self.cantidad) if self.cantidad is not None else "No Cantidad"
         return f"{venta_str} - {producto_str} - {cantidad_str}"
+
+    def save(self, *args, **kwargs):
+        # Verificar si es una creación o una actualización
+        is_new = self.pk is None
+        super().save(*args, **kwargs)
+
+        # Actualizar el importe total de la venta después de agregar o actualizar un detalle
+        if self.venta:
+            self.venta.calcular_importe_total()
+
 
 class Factura(models.Model):
     fecha = models.DateField()
@@ -176,8 +190,8 @@ class DetalleFactura(models.Model):
     factura = models.ForeignKey(Factura, related_name='detalles', on_delete=models.CASCADE)
     producto = models.ForeignKey(Producto, on_delete=models.PROTECT, default=None, null=True, blank=True)
     cantidad = models.PositiveIntegerField()
-    precio_unitario = models.DecimalField(max_digits=10, decimal_places=2,default=0.00)
+    precio_unitario = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     medio_de_pago = models.ForeignKey(MedioDePago, on_delete=models.CASCADE, default=None, null=True)
 
     def __str__(self):
-     return f"{self.cantidad} x {self.producto.nombre} ({self.get_medio_de_pago_display()})"
+        return f"{self.cantidad} x {self.producto.nombre} ({self.get_medio_de_pago_display()})"

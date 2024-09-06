@@ -14,7 +14,7 @@ class ProveedorAdmin(admin.ModelAdmin):
     search_fields = ('nombre', 'tipo_producto')
 
 class MovimientoStockAdmin(admin.ModelAdmin):
-    list_display = ('producto', 'tipo', 'cantidad', 'fecha', 'observaciones')
+    list_display = ('producto', 'tipo', 'cantidad', 'fecha', 'comprobante')
     list_filter = ('tipo', 'fecha')
     search_fields = ('producto__nombre',)
 
@@ -35,7 +35,6 @@ class ProductoAdmin(admin.ModelAdmin):
     list_editable = ('precio', 'cantidad_stock')
     
     def precio_con_simbolo(self, obj):
-        
         return f'$ {obj.precio}'
     precio_con_simbolo.short_description = "Precio"
 
@@ -48,6 +47,14 @@ class VentaAdmin(admin.ModelAdmin):
     list_filter = ('fecha', 'medio_de_pago')
     search_fields = ('numero_comprobante', 'cliente__nombre')
     inlines = [DetalleVentaInline]
+    
+    readonly_fields = ['numero_comprobante']  # Hacemos que el campo sea solo de lectura
+    fields = ['fecha', 'cliente', 'medio_de_pago', 'importe_total']  # Eliminamos el ManyToManyField 'detalle_ventas'
+
+    def save_model(self, request, obj, form, change):
+        if not obj.numero_comprobante:  # Si no tiene número de comprobante, generarlo
+            obj.numero_comprobante = obj.generar_numero_comprobante()
+        super().save_model(request, obj, form, change)
 
 class MedioDePagoAdmin(admin.ModelAdmin):
     list_display = ('nombre',)
