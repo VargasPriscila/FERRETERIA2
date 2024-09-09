@@ -60,9 +60,6 @@ class MovimientoStock(models.Model):
 
         if self.tipo == 'entrada':
             self.producto.cantidad_stock += self.cantidad
-        elif self.tipo == 'salida':
-            self.producto.cantidad_stock -= self.cantidad
-
         self.producto.save()  # Guardar los cambios en el producto
 
 
