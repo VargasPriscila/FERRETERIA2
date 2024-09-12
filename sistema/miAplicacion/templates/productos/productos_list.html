@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">Productos</h2>
+        <a href="{% url 'productos_create' %}" class="btn btn-primary">Agregar Producto</a>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Precio</th>
+                    <th>Stock</th>
+                    <th>Proveedor</th>
+                    <th>Categoría</th>
+                    <th class="text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for producto in productos %}
+                <tr>
+                    <td>{{ producto.id }}</td>
+                    <td>{{ producto.nombre }}</td>
+                    <td>{{ producto.precio }}</td>
+                    <td>{{ producto.cantidad_stock}}</td>
+                    <td>{{ producto.proveedor }}</td>
+                    <td>{{ producto.categoria }}</td>
+                    <td class="text-center">
+                        <a href="{% url 'productos_update' producto.id %}" class="btn btn-warning btn-sm">Editar</a>
+                        <a href="{% url 'productos_delete' producto.id %}" class="btn btn-danger btn-sm">Eliminar</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+

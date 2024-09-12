@@ -1,20 +1,15 @@
 # miAplicacion/forms.py
-
 from django import forms
-from .models import Categoria
-from .models import Proveedor
-
+from .models import Categoria, Proveedor, Producto
 
 class CategoriaForm(forms.ModelForm):
     class Meta:
         model = Categoria
-        fields = ['nombre','descripcion']  # Incluye los campos que quieres que el formulario maneje
+        fields = ['nombre', 'descripcion']
         widgets = {
             'nombre': forms.TextInput(attrs={'class': 'form-control'}),
             'descripcion': forms.TextInput(attrs={'class': 'form-control'}),
         }
-
-
 
 class ProveedorForm(forms.ModelForm):
     class Meta:
@@ -26,4 +21,15 @@ class ProveedorForm(forms.ModelForm):
             'telefono': forms.TextInput(attrs={'class': 'form-control'}),
             'email': forms.EmailInput(attrs={'class': 'form-control'}),
             'direccion': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+        }
+
+class ProductoForm(forms.ModelForm):
+    class Meta:
+        model = Producto
+        fields = ['nombre', 'descripcion', 'precio', 'cantidad_stock', 'categoria', 'proveedor']
+        widgets = {
+            'nombre': forms.TextInput(attrs={'class': 'form-control'}),
+            'descripcion': forms.TextInput(attrs={'class': 'form-control'}),
+            'precio': forms.NumberInput(attrs={'class': 'form-control'}),
+            'cantidad_stock': forms.NumberInput(attrs={'class': 'form-control'}),
         }

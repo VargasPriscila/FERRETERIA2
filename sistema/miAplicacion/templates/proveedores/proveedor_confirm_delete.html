@@ -4,16 +4,18 @@
 <div class="container my-5">
     <div class="card border-danger">
         <div class="card-body">
-            <h2 class="text-danger">Eliminar Categoría</h2>
-            <p>¿Estás seguro que deseas eliminar la categoría "<strong>{{ categoria.nombre }}</strong>"?</p>
+            <h2 class="text-danger">Eliminar Proveedor</h2>
+            <p>¿Estás seguro que deseas eliminar el proveedor "<strong>{{ proveedor.nombre }}</strong>"?</p>
             <form method="post">
                 {% csrf_token %}
                 <div class="d-flex justify-content-between">
                     <button type="submit" class="btn btn-danger">Eliminar</button>
-                    <a href="{% url 'categoria_list' %}" class="btn btn-secondary">Cancelar</a>
+                    <a href="{% url 'proveedor_list' %}" class="btn btn-secondary">Cancelar</a>
                 </div>
             </form>
         </div>
     </div>
 </div>
 {% endblock %}
+
+

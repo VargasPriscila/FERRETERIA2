@@ -2,14 +2,16 @@
 
 {% block content %}
 <div class="container my-5">
-    <div class="card border-danger">
+    <h2 class="mb-4">{% if form.instance.pk %}Editar{% else %}Crear{% endif %} Categoría</h2>
+    <div class="card shadow-sm">
         <div class="card-body">
-            <h2 class="text-danger">Eliminar Proveedor</h2>
-            <p>¿Estás seguro que deseas eliminar el proveedor "<strong>{{ categoria.nombre }}</strong>"?</p>
             <form method="post">
                 {% csrf_token %}
+                {{ form.as_p }}
                 <div class="d-flex justify-content-between">
-                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                    <button type="submit" class="btn btn-primary">
+                        {% if form.instance.pk %}Actualizar{% else %}Crear{% endif %}
+                    </button>
                     <a href="{% url 'categoria_list' %}" class="btn btn-secondary">Cancelar</a>
                 </div>
             </form>
@@ -17,4 +19,6 @@
     </div>
 </div>
 {% endblock %}
+
+
 
