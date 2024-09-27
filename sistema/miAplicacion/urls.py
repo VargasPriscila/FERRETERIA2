@@ -1,6 +1,7 @@
 # urls.py
 from django.urls import path
 from . import views
+from .views import obtener_precio_producto
 
 urlpatterns = [
     path('', views.index, name='index'),
@@ -22,4 +23,14 @@ urlpatterns = [
     path('productos/nueva/', views.productos_create, name='productos_create'),
     path('productos/editar/<int:pk>/', views.productos_update, name='productos_update'),
     path('productos/eliminar/<int:pk>/', views.productos_delete, name='productos_delete'),
+    
+    # Ventas
+    path('ventas/', views.venta_lista, name='venta_lista'),
+    path('ventas/agregar/', views.venta_agregar, name='venta_agregar'),
+    path('ventas/anular/<int:pk>/', views.venta_anular, name='venta_anular'),
+    
+    
+    
+    
+    path('producto/precio/<int:producto_id>/', obtener_precio_producto, name='obtener_precio_producto'),
 ]

@@ -1,0 +1,43 @@
+<form method="post">
+    {% csrf_token %}
+    {{ venta_form.as_p }}
+    <table>
+        <tr>
+            <th>Producto</th>
+            <th>Precio</th>
+            <th>Cantidad</th>
+            <th>Importe</th>
+        </tr>
+        <tr>
+            <td>{{ detalle_venta_form.producto }}</td>
+            <td>
+                <input type="text" id="precio" value="{{ detalle_venta_form.precio.value }}" readonly>
+            </td>
+            <td>{{ detalle_venta_form.cantidad }}</td>
+            <td><input type="text" id="importe" readonly></td>
+        </tr>
+    </table>
+
+    <h4>Total de la venta: <span id="total_importe">0.00</span></h4>
+
+    <button type="submit">Guardar Venta</button>
+</form>
+
+<script>
+    // Función para calcular el importe total
+    function calcularImporteTotal() {
+      let total = 0;
+      // Suponiendo que tienes una clase para cada fila de producto
+      const filasProductos = document.querySelectorAll('.fila-producto');
+      filasProductos.forEach(fila => {
+        const cantidad = fila.querySelector('.cantidad-input').value;
+        const precio = fila.querySelector('.precio-input').value;
+        total += parseFloat(cantidad) * parseFloat(precio);
+      });
+      document.getElementById('total_importe').textContent = total.toFixed(2);
+    }
+  
+    // Agregar evento a cada campo de cantidad para actualizar el total
+    // ... (código para agregar el evento a cada campo de cantidad) ...
+</script>
+

@@ -1,5 +1,6 @@
 from django.contrib import admin
 from .models import *
+from django.utils.html import format_html
 
 class ClienteAdmin(admin.ModelAdmin):
     list_display = ('nombre', 'apellido', 'documento', 'telefono', 'email')
@@ -41,20 +42,24 @@ class ProductoAdmin(admin.ModelAdmin):
 class DetalleVentaInline(admin.TabularInline):
     model = DetalleVenta
     extra = 1
+    fields = ['producto', 'precio_unitario', 'cantidad', 'importe']
+    readonly_fields = ['precio_unitario', 'importe']
+
+    def precio_unitario(self, obj):
+        if obj.producto:
+            return format_html(f'<span>$ {obj.producto.precio}</span>')
+        return "-"
+    
+    precio_unitario.short_description = "Precio Unitario"
+    
+    class Media:
+        js = ('static/js/detalle_venta.js',)
+
 
 class VentaAdmin(admin.ModelAdmin):
     list_display = ('fecha', 'numero_comprobante', 'cliente', 'medio_de_pago', 'importe_total')
-    list_filter = ('fecha', 'medio_de_pago')
-    search_fields = ('numero_comprobante', 'cliente__nombre')
+    readonly_fields = ['numero_comprobante', 'importe_total']
     inlines = [DetalleVentaInline]
-    
-    readonly_fields = ['numero_comprobante']  # Hacemos que el campo sea solo de lectura
-    fields = ['fecha', 'cliente', 'medio_de_pago', 'importe_total']  # Eliminamos el ManyToManyField 'detalle_ventas'
-
-    def save_model(self, request, obj, form, change):
-        if not obj.numero_comprobante:  # Si no tiene número de comprobante, generarlo
-            obj.numero_comprobante = obj.generar_numero_comprobante()
-        super().save_model(request, obj, form, change)
 
 class MedioDePagoAdmin(admin.ModelAdmin):
     list_display = ('nombre',)

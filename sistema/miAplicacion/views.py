@@ -1,7 +1,13 @@
 # views.py
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Categoria, Proveedor, Producto
-from .forms import CategoriaForm, ProveedorForm, ProductoForm
+from .models import Categoria, Proveedor, Producto, Venta, DetalleVenta
+from .forms import (CategoriaForm, ProveedorForm, ProductoForm,VentaForm, DetalleVentaForm,)
+from django.shortcuts import render
+from django.db import transaction
+from django.http import JsonResponse
+
+
+
 
 def index(request):
     return render(request, "index.html")
@@ -110,4 +116,61 @@ def productos_delete(request, pk):
         productos.delete()
         return redirect('productos_list')
     return render(request, 'productos/productos_confirm_delete.html', {'productos': productos})
+
+
+
+"""-------------------------------------------------------------------------------------------------------------------------------------------------
+"""
+
+#ventas
+
+# Vista para listar ventas
+def venta_lista(request):
+    ventas = Venta.objects.filter(anulada=False).all()
+    return render(request, 'ventas/venta_lista.html', {'ventas': ventas})
+
+# Vista para agregar una venta
+@transaction.atomic
+def venta_agregar(request):
+    if request.method == 'POST':
+        venta_form = VentaForm(request.POST)
+        detalle_venta_form = DetalleVentaForm(request.POST)
+        if venta_form.is_valid() and detalle_venta_form.is_valid():
+            venta = venta_form.save()
+            detalle_venta = detalle_venta_form.save(commit=False)
+            detalle_venta.venta = venta
+            detalle_venta.save()
+
+            # Redirigir a la lista de ventas
+            return redirect('venta_lista')
+    else:
+        venta_form = VentaForm()
+        detalle_venta_form = DetalleVentaForm()
+
+    return render(request, 'ventas/venta_agregar.html', {
+        'venta_form': venta_form, 
+        'detalle_venta_form': detalle_venta_form
+    })
+
+# Vista para anular una venta
+def venta_anular(request, pk):
+    venta = get_object_or_404(Venta, pk=pk)
+    if request.method == 'POST':
+        venta.anulada = True
+        venta.save()
+        # Revertir el stock de los productos
+        for detalle in venta.detalleventa_set.all():
+            producto = detalle.producto
+            producto.cantidad_stock += detalle.cantidad
+            producto.save()
+
+        return redirect('venta_lista')
+
+    return render(request, 'ventas/venta_anular.html', {'venta': venta})
+
+
+
+def obtener_precio_producto(request, producto_id):
+    producto = Producto.objects.get(id=producto_id)
+    return JsonResponse({'precio': str(producto.precio)})
 

@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block title %}Lista de Ventas{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Lista de Ventas</h2>
+    <table class="table table-striped">
+        
+        <thead>
+            <a href="{% url 'venta_agregar' %}" class="btn btn-primary">Agregar Venta</a>
+            <tr>
+                <th>Fecha</th>
+                <th>Cliente</th>
+                <th>Importe Total</th>
+                <th>Número de Comprobante</th>
+                <th>Anular</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for venta in ventas %}
+            <tr>
+                <td>{{ venta.fecha }}</td>
+                <td>{{ venta.cliente }}</td>
+                <td>${{ venta.importe_total }}</td>
+                <td>{{ venta.numero_comprobante }}</td>
+                <td>
+                    <a href="{% url 'venta_anular' venta.pk %}" class="btn btn-danger btn-sm">Anular</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+

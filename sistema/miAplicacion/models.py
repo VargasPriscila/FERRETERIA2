@@ -2,6 +2,7 @@ import random
 from django.db import models, transaction
 from django.db.models import Sum
 from django.utils import timezone
+from decimal import Decimal
 
 class Cliente(models.Model):
     nombre = models.CharField(max_length=50)
@@ -105,6 +106,7 @@ class Producto(models.Model):
         return self.nombre
 
 
+
 class MedioDePago(models.Model):
     TIPO_PAGO_CHOICES = [
         ('EF', 'Efectivo'),
@@ -125,7 +127,7 @@ class Venta(models.Model):
     medio_de_pago = models.ForeignKey(MedioDePago, on_delete=models.CASCADE, default=None, null=True)
     detalle_ventas = models.ManyToManyField(Producto, through="DetalleVenta")
     importe_total = models.DecimalField(null=False, max_digits=10, decimal_places=2, default=0.00)
-
+    anulada = models.BooleanField(default=False)  # Nuevo campo
     def __str__(self):
         return str(self.numero_comprobante)
 
@@ -153,9 +155,11 @@ class Venta(models.Model):
 
 
 class DetalleVenta(models.Model):
-    venta = models.ForeignKey(Venta, on_delete=models.CASCADE, default=None, null=True)
-    producto = models.ForeignKey(Producto, on_delete=models.CASCADE, default=None, null=True)
-    cantidad = models.IntegerField(default=None, null=True)
+    venta = models.ForeignKey('Venta', on_delete=models.CASCADE, default=None, null=True)
+    producto = models.ForeignKey('Producto', on_delete=models.CASCADE, default=None, null=True)
+    cantidad = models.PositiveIntegerField(default=None, null=True)  # Cambiar a PositiveIntegerField
+    importe = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+
 
     def __str__(self):
         venta_str = str(self.venta) if self.venta else "No Venta"
@@ -164,6 +168,10 @@ class DetalleVenta(models.Model):
         return f"{venta_str} - {producto_str} - {cantidad_str}"
 
     def save(self, *args, **kwargs):
+        # Calcular el importe antes de guardar, cantidad * precio del producto
+        if self.producto and self.cantidad:
+            self.importe = self.cantidad * self.producto.precio
+        
         # Verificar si es una creación o una actualización
         is_new = self.pk is None
         super().save(*args, **kwargs)
