@@ -1,6 +1,7 @@
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
-from .models import DetalleVenta, MovimientoStock
+from .models import DetalleVenta, MovimientoStock, Producto
+
 
 @receiver(post_save, sender=DetalleVenta)
 def actualizar_stock_post_venta(sender, instance, created, **kwargs):

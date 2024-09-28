@@ -42,7 +42,7 @@ class ProductoAdmin(admin.ModelAdmin):
 class DetalleVentaInline(admin.TabularInline):
     model = DetalleVenta
     extra = 1
-    fields = ['producto', 'precio_unitario', 'cantidad', 'importe']
+    fields = ['producto', 'precio_unitario', 'cantidad', 'importe',]
     readonly_fields = ['precio_unitario', 'importe']
 
     def precio_unitario(self, obj):
@@ -51,6 +51,9 @@ class DetalleVentaInline(admin.TabularInline):
         return "-"
     
     precio_unitario.short_description = "Precio Unitario"
+    
+    def calcular_total(self):
+        return self.cantidad * self.precio_unitario
     
     class Media:
         js = ('static/js/detalle_venta.js',)

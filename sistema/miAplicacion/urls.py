@@ -33,4 +33,5 @@ urlpatterns = [
     
     
     path('producto/precio/<int:producto_id>/', obtener_precio_producto, name='obtener_precio_producto'),
+
 ]

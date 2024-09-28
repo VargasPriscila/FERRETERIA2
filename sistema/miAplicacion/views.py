@@ -134,22 +134,36 @@ def venta_lista(request):
 def venta_agregar(request):
     if request.method == 'POST':
         venta_form = VentaForm(request.POST)
-        detalle_venta_form = DetalleVentaForm(request.POST)
-        if venta_form.is_valid() and detalle_venta_form.is_valid():
-            venta = venta_form.save()
-            detalle_venta = detalle_venta_form.save(commit=False)
-            detalle_venta.venta = venta
-            detalle_venta.save()
 
-            # Redirigir a la lista de ventas
+        # Comprobamos si el formulario de venta es válido
+        if venta_form.is_valid():
+            venta = venta_form.save()  # Guardamos la venta principal
+
+            # Procesamos los productos seleccionados
+            productos_ids = request.POST.getlist('producto[]')
+            cantidades = request.POST.getlist('cantidad[]')
+
+            # Iteramos sobre los productos seleccionados
+            for producto_id, cantidad in zip(productos_ids, cantidades):
+                producto = get_object_or_404(Producto, id=producto_id)
+                cantidad = int(cantidad)
+
+                # Creamos el detalle de la venta
+                DetalleVenta.objects.create(
+                    venta=venta,
+                    producto=producto,
+                    cantidad=cantidad
+                )
+
+            # Redirigimos a la lista de ventas
             return redirect('venta_lista')
+
     else:
         venta_form = VentaForm()
-        detalle_venta_form = DetalleVentaForm()
 
     return render(request, 'ventas/venta_agregar.html', {
-        'venta_form': venta_form, 
-        'detalle_venta_form': detalle_venta_form
+        'venta_form': venta_form,
+        'productos': Producto.objects.all()
     })
 
 # Vista para anular una venta
