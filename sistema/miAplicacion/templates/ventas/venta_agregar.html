@@ -22,85 +22,69 @@
             <tr class="fila-producto">
                 <td>
                     <select name="producto[]" class="producto-input">
-                <!--<select>: Lista desplegable que permite seleccionar productos.-->
                         {% for producto in productos %}
                             <option value="{{ producto.id }}" data-precio="{{ producto.precio }}">{{ producto.nombre }}</option>
-                            <!--Cada opción tiene un atributo data-precio, que almacena el precio del producto.-->
                         {% endfor %}
                     </select>
                 </td>
                 <td><input type="text" class="precio-input" readonly></td>
-                <!--Campo de texto que muestra el precio del producto seleccionado. Es de solo lectura.-->
                 <td><input type="number" name="cantidad[]" class="cantidad-input" value="1" min="1"></td>
-                <!--Permite al usuario ingresar la cantidad de productos a comprar.-->
                 <td><input type="text" class="importe-input" readonly></td>
-                <!--Campo que muestra el importe total (precio * cantidad) para cada producto. También es de solo lectura.-->
-                <td><button type="button" class="btn-remove">Eliminar</button></td>
-                <!--Botón para eliminar una fila de productos.-->
+                <td><button type="button" class="btn-remove" style="display: none;">Eliminar</button></td>
             </tr>
         </tbody>
     </table>
+
     <h4>Total de la venta: <span id="total_importe">0.00</span></h4>
-    <!--Muestra el total de la venta, que se actualiza dinámicamente.-->
+
+    <label for="monto_pago">Monto con el que paga el cliente:</label>
+    <input type="number" id="monto_pago" name="monto_pago" step="0.01" min="0">
+
+    <h4>Vuelto: <span id="vuelto">0.00</span></h4>
+    <h4>Falta: <span id="falta">0.00</span></h4> <!-- Nueva línea para mostrar cuánto falta -->
+
     <button type="button" id="add-producto-btn">Agregar Producto</button>
-    <!--Botón para agregar una nueva fila de productos a la tabla.-->
-    <button type="submit">Guardar Venta</button>
-    <!--Botón que envía el formulario para guardar la venta.-->
+    <button type="submit">Terminar Venta</button>
+    <button type="button" onclick="window.location.href='{% url 'venta_lista' %}'" class="btn btn-secondary">Atras</button>
 </form>
 
 <script>
 function agregarEventosFila(fila) {
-    // Esta función asigna eventos a los elementos de cada fila de productos.
     const productoInput = fila.querySelector('.producto-input');
     const cantidadInput = fila.querySelector('.cantidad-input');
     const btnRemove = fila.querySelector('.btn-remove');
 
-    // Actualiza el precio cuando se selecciona un producto
     productoInput.addEventListener('change', function() {
-    // Se ejecuta cuando el usuario selecciona un producto. 
-    // Actualiza el campo de precio (precio-input) con el valor almacenado
-    // en el atributo data-precio del producto.
         const selectedOption = this.options[this.selectedIndex];
         const precio = selectedOption.getAttribute('data-precio');
         const precioInput = fila.querySelector('.precio-input');
         precioInput.value = parseFloat(precio).toFixed(2);
         actualizarImporte(fila);
+        actualizarDisponibilidadProductos(); 
     });
 
-    // Actualiza el importe cuando se cambia la cantidad
     cantidadInput.addEventListener('input', function() {
-    // Se ejecuta cuando el usuario cambia la cantidad del producto. 
-    // Llama a la función actualizarImporte(fila) para recalcular el importe.
         actualizarImporte(fila);
     });
 
-    // Elimina la fila al hacer clic en el botón "Eliminar"
     btnRemove.addEventListener('click', function() {
         fila.remove();
-    // Permite eliminar una fila de la tabla. Después de eliminar,
-    // se llama a actualizarTotal() para recalcular el total de la venta.
         actualizarTotal();
+        actualizarDisponibilidadProductos(); 
     });
 }
 
-// Función para actualizar el importe basado en el precio y la cantidad
 function actualizarImporte(fila) {
-    // Calcula el importe total de una fila de productos (precio * cantidad).
     const precio = parseFloat(fila.querySelector('.precio-input').value);
     const cantidad = parseInt(fila.querySelector('.cantidad-input').value);
     if (!isNaN(precio) && !isNaN(cantidad)) {
-        // Si los valores de precio y cantidad son válidos, actualiza el campo de importe-input
         const importe = precio * cantidad;
         fila.querySelector('.importe-input').value = importe.toFixed(2);
-        //  y luego llama a actualizarTotal() para actualizar el total de la venta.
         actualizarTotal();
     }
 }
 
-// Función para actualizar el total general de la venta
 function actualizarTotal() {
-    // Suma los importes de todas las filas de productos y actualiza el campo total_importe con el total calculado.
-    // Esta función se ejecuta cada vez que se cambia un producto, cantidad o se elimina una fila.
     let total = 0;
     const filasProductos = document.querySelectorAll('.fila-producto');
     filasProductos.forEach(fila => {
@@ -110,35 +94,75 @@ function actualizarTotal() {
         }
     });
     document.getElementById('total_importe').textContent = total.toFixed(2);
+    calcularVuelto();  // Recalcular el vuelto cuando se actualice el total
 }
 
-// Función para agregar una nueva fila de productos
+function actualizarDisponibilidadProductos() {
+    const productosSeleccionados = [];
+    document.querySelectorAll('.producto-input').forEach(select => {
+        const selectedValue = select.value;
+        if (selectedValue) {
+            productosSeleccionados.push(selectedValue);
+        }
+    });
+
+    document.querySelectorAll('.producto-input').forEach(select => {
+        const opciones = select.querySelectorAll('option');
+        opciones.forEach(opcion => {
+            if (productosSeleccionados.includes(opcion.value) && opcion.value !== select.value) {
+                opcion.disabled = true;
+            } else {
+                opcion.disabled = false;
+            }
+        });
+    });
+}
+
 document.getElementById('add-producto-btn').addEventListener('click', function() {
-    // Este código permite agregar una nueva fila de productos cuando el usuario hace clic en el botón "Agregar Producto". 
-    
     const productosBody = document.getElementById('productos-body');
     const nuevaFila = document.querySelector('.fila-producto').cloneNode(true);
-    // La fila nueva es una copia (cloneNode()) de una fila existente, 
 
-    // pero sus campos se limpian antes de agregarse a la tabla.
     nuevaFila.querySelector('.precio-input').value = '';
     nuevaFila.querySelector('.cantidad-input').value = 1;
     nuevaFila.querySelector('.importe-input').value = '';
 
-    // Los eventos necesarios para la interacción se asignan a la nueva fila mediante la función agregarEventosFila(nuevaFila).
+    nuevaFila.querySelector('.btn-remove').style.display = 'inline-block';
+
     agregarEventosFila(nuevaFila);
 
-    // Agregar la fila a la tabla
     productosBody.appendChild(nuevaFila);
+
+    actualizarDisponibilidadProductos(); 
 });
 
-// Inicialización: Esta parte del código asegura que todas las filas de productos que ya están presentes al cargar la página 
-// tengan asignados los eventos correspondientes. Es necesario para que la primera fila funcione correctamente, 
-// ya que no fue agregada dinámicamente.
 document.querySelectorAll('.fila-producto').forEach(fila => {
     agregarEventosFila(fila);
 });
+
+function calcularVuelto() {
+    const total = parseFloat(document.getElementById('total_importe').textContent);
+    const montoPago = parseFloat(document.getElementById('monto_pago').value);
+
+    if (!isNaN(montoPago)) {
+        if (montoPago >= total) {
+            const vuelto = montoPago - total;
+            document.getElementById('vuelto').textContent = vuelto.toFixed(2);
+            document.getElementById('falta').textContent = "0.00";  // Si paga lo suficiente o más, no falta nada
+        } else {
+            const falta = total - montoPago;
+            document.getElementById('falta').textContent = falta.toFixed(2);
+            document.getElementById('vuelto').textContent = "0.00";  // Si falta, no hay vuelto
+        }
+    } else {
+        document.getElementById('vuelto').textContent = "0.00";
+        document.getElementById('falta').textContent = total.toFixed(2);  // Mostrar todo el total como faltante si no ha ingresado nada
+    }
+}
+
+document.getElementById('monto_pago').addEventListener('input', calcularVuelto);
 </script>
+
+
 
 
 
