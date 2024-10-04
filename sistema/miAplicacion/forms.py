@@ -33,12 +33,11 @@ class ProductoForm(forms.ModelForm):
             'precio': forms.NumberInput(attrs={'class': 'form-control'}),
             'cantidad_stock': forms.NumberInput(attrs={'class': 'form-control'}),
         }
-        
 
 class VentaForm(forms.ModelForm):
     class Meta:
         model = Venta
-        fields = ['cliente', 'medio_de_pago',]
+        fields = ['cliente', 'medio_de_pago']
         widgets = {
             'cliente': forms.Select(attrs={'class': 'form-control'}),
             'medio_de_pago': forms.Select(attrs={'class': 'form-control'}),
@@ -48,6 +47,10 @@ class DetalleVentaForm(forms.ModelForm):
     class Meta:
         model = DetalleVenta
         fields = ['producto', 'cantidad']
+        widgets = {
+            'producto': forms.Select(attrs={'class': 'form-control'}),
+            'cantidad': forms.NumberInput(attrs={'class': 'form-control'}),
+        }
 
     def clean_cantidad(self):
         cantidad = self.cleaned_data.get('cantidad')

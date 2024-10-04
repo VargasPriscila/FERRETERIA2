@@ -1,11 +1,11 @@
-from django.db.models.signals import post_save, pre_save
+from django.db.models.signals import post_save
 from django.dispatch import receiver
-from .models import DetalleVenta, MovimientoStock, Producto
+from .models import DetalleVenta, MovimientoStock, Producto, Venta
 
 
 @receiver(post_save, sender=DetalleVenta)
 def actualizar_stock_post_venta(sender, instance, created, **kwargs):
-    if created:  # Solo ejecutamos esto cuando se crea un DetalleVenta
+    if created and instance.venta and not instance.venta.anulada:  # Solo ejecutamos esto si la venta no está anulada
         producto = instance.producto
         cantidad_vendida = instance.cantidad
 
@@ -21,3 +21,4 @@ def actualizar_stock_post_venta(sender, instance, created, **kwargs):
         # Actualizar la cantidad en el producto
         producto.cantidad_stock -= cantidad_vendida
         producto.save()
+

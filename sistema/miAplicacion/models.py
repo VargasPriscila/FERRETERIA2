@@ -4,6 +4,7 @@ from django.db.models import Sum
 from django.utils import timezone
 from decimal import Decimal
 
+
 class Cliente(models.Model):
     nombre = models.CharField(max_length=50)
     apellido = models.CharField(max_length=100)
@@ -128,12 +129,13 @@ class Venta(models.Model):
     detalle_ventas = models.ManyToManyField(Producto, through="DetalleVenta")
     importe_total = models.DecimalField(null=False, max_digits=10, decimal_places=2, default=0.00)
     anulada = models.BooleanField(default=False)  # Nuevo campo
+
     def __str__(self):
         return str(self.numero_comprobante)
 
     def calcular_importe_total(self):
-        # Calcular el importe total sumando los precios de los productos en los detalles de venta
-        total = sum(detalle.cantidad * detalle.producto.precio for detalle in self.detalleventa_set.all())
+        # Calcular el importe total sumando los importes de los detalles de venta
+        total = self.detalleventa_set.aggregate(total_importe=models.Sum('importe'))['total_importe'] or 0
         self.importe_total = total
         self.save(update_fields=['importe_total'])
 
@@ -144,7 +146,6 @@ class Venta(models.Model):
             self.numero_comprobante = self.generar_numero_comprobante()
 
         super(Venta, self).save(*args, **kwargs)
-        # Nota: la lógica de actualización de stock ahora se maneja completamente en las señales
 
     @staticmethod
     def generar_numero_comprobante():
@@ -157,9 +158,10 @@ class Venta(models.Model):
 class DetalleVenta(models.Model):
     venta = models.ForeignKey('Venta', on_delete=models.CASCADE, default=None, null=True)
     producto = models.ForeignKey('Producto', on_delete=models.CASCADE, default=None, null=True)
-    cantidad = models.PositiveIntegerField(default=None, null=True)  # Cambiar a PositiveIntegerField
+    cantidad = models.PositiveIntegerField(default=None, null=True)  # Cambiado a PositiveIntegerField
+    precio_unitario = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)  # Campo congelado
     importe = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-
+    hora = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         venta_str = str(self.venta) if self.venta else "No Venta"
@@ -168,17 +170,20 @@ class DetalleVenta(models.Model):
         return f"{venta_str} - {producto_str} - {cantidad_str}"
 
     def save(self, *args, **kwargs):
-        # Calcular el importe antes de guardar, cantidad * precio del producto
-        if self.producto and self.cantidad:
-            self.importe = self.cantidad * self.producto.precio
-        
-        # Verificar si es una creación o una actualización
-        is_new = self.pk is None
+        # Si es una nueva instancia, establecer el precio_unitario del producto
+        if self.pk is None and self.producto:
+            self.precio_unitario = self.producto.precio  # Almacena el precio actual del producto
+
+        # Calcular el importe (cantidad * precio_unitario)
+        if self.cantidad and self.precio_unitario:
+            self.importe = self.cantidad * self.precio_unitario
+
         super().save(*args, **kwargs)
 
-        # Actualizar el importe total de la venta después de agregar o actualizar un detalle
+        # Actualizar el importe total de la venta
         if self.venta:
             self.venta.calcular_importe_total()
+
 
 
 class Factura(models.Model):

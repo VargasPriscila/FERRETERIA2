@@ -1,0 +1,35 @@
+{% load custom_filters %}
+
+<h1>Detalle de la Venta</h1>
+<p><strong>Fecha:</strong> {{ venta.fecha }}</p>
+<p><strong>Hora:</strong> {{ venta.hora }}</p>
+<p><strong>Cliente:</strong> {{ venta.cliente }}</p>
+<p><strong>Medio de Pago:</strong> {{ venta.medio_de_pago }}</p>
+<p><strong>Comprobante:</strong> {{ venta.numero_comprobante }}</p>
+<p><strong>Importe Total:</strong> {{ venta.importe_total }}</p>
+
+<h2>Productos</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Producto</th>
+            <th>Cantidad</th>
+            <th>Precio Unitario</th>
+            <th>Subtotal</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for detalle in detalles_venta %}
+        <tr>
+            <td>{{ detalle.producto.nombre }}</td>
+            <td>{{ detalle.cantidad }}</td>
+            <td>{{ detalle.precio_unitario }}</td>
+            <td>{{ detalle.cantidad|multiply:detalle.precio_unitario }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h3>Total de la Venta: {{ venta.importe_total }}</h3>
+
+

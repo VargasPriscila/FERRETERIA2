@@ -100,29 +100,24 @@ def productos_create(request):
     return render(request, 'productos/productos_form.html', {'form': form})
 
 def productos_update(request, pk):
-    productos = get_object_or_404(Producto, pk=pk)
+    producto = get_object_or_404(Producto, pk=pk)
     if request.method == 'POST':
-        form = ProductoForm(request.POST, instance=productos)
+        form = ProductoForm(request.POST, instance=producto)
         if form.is_valid():
             form.save()
             return redirect('productos_list')
     else:
-        form = ProductoForm(instance=productos)
+        form = ProductoForm(instance=producto)
     return render(request, 'productos/productos_form.html', {'form': form})
 
 def productos_delete(request, pk):
-    productos = get_object_or_404(Producto, pk=pk)
+    producto = get_object_or_404(Producto, pk=pk)
     if request.method == 'POST':
-        productos.delete()
+        producto.delete()
         return redirect('productos_list')
-    return render(request, 'productos/productos_confirm_delete.html', {'productos': productos})
+    return render(request, 'productos/productos_confirm_delete.html', {'producto': producto})
 
-
-
-"""-------------------------------------------------------------------------------------------------------------------------------------------------
-"""
-
-#ventas
+# Ventas
 
 # Vista para listar ventas
 def venta_lista(request):
@@ -148,11 +143,12 @@ def venta_agregar(request):
                 producto = get_object_or_404(Producto, id=producto_id)
                 cantidad = int(cantidad)
 
-                # Creamos el detalle de la venta
+                # Creamos el detalle de la venta con el precio congelado
                 DetalleVenta.objects.create(
                     venta=venta,
                     producto=producto,
-                    cantidad=cantidad
+                    cantidad=cantidad,
+                    precio_unitario=producto.precio,  # Guardamos el precio actual del producto
                 )
 
             # Redirigimos a la lista de ventas
@@ -182,9 +178,17 @@ def venta_anular(request, pk):
 
     return render(request, 'ventas/venta_anular.html', {'venta': venta})
 
+def detalle_venta(request, venta_id):
+    venta = get_object_or_404(Venta, id=venta_id)
+    detalles_venta = DetalleVenta.objects.filter(venta=venta)
 
+    context = {
+        'venta': venta,
+        'detalles_venta': detalles_venta,  # Asegúrate de usar 'detalles_venta'
+    }
+    return render(request, 'ventas/detalle_venta.html', context)
 
 def obtener_precio_producto(request, producto_id):
-    producto = Producto.objects.get(id=producto_id)
+    producto = get_object_or_404(Producto, id=producto_id)
     return JsonResponse({'precio': str(producto.precio)})
 

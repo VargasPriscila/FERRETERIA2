@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}Lista de Ventas{% endblock %}
+{% block title %}Ventas{% endblock %}
 {% block content %}
 <div class="container mt-5">
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -12,16 +12,19 @@
                 <tr>
                     <th>Fecha</th>
                     <th>Cliente</th>
+                    <th>Medio de Pago</th>
                     <th>Importe Total</th>
                     <th>Número de Comprobante</th>
                     <th>Anular</th>
+
                 </tr>
             </thead>
             <tbody>
                 {% for venta in ventas %}
-                <tr>
+                <tr onclick="window.location='{% url 'detalle_venta' venta.id %}'">
                     <td>{{ venta.fecha }}</td>
                     <td>{{ venta.cliente }}</td>
+                    <td>{{ venta.medio_de_pago }}</td>
                     <td>${{ venta.importe_total }}</td>
                     <td>{{ venta.numero_comprobante }}</td>
                     <td>
