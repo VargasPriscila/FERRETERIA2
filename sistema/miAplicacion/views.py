@@ -1,7 +1,7 @@
 # views.py
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Categoria, Proveedor, Producto, Venta, DetalleVenta
-from .forms import (CategoriaForm, ProveedorForm, ProductoForm,VentaForm, DetalleVentaForm,)
+from .models import Categoria, Proveedor, Producto, Venta, DetalleVenta, Cliente
+from .forms import (CategoriaForm, ProveedorForm, ProductoForm,VentaForm, DetalleVentaForm,ClienteForm)
 from django.shortcuts import render
 from django.db import transaction
 from django.http import JsonResponse
@@ -117,6 +117,10 @@ def productos_delete(request, pk):
         return redirect('productos_list')
     return render(request, 'productos/productos_confirm_delete.html', {'producto': producto})
 
+
+"""-------------------------------------------------------------------------------------------------------------------------------------------------
+"""
+
 # Ventas
 
 # Vista para listar ventas
@@ -182,9 +186,13 @@ def detalle_venta(request, venta_id):
     venta = get_object_or_404(Venta, id=venta_id)
     detalles_venta = DetalleVenta.objects.filter(venta=venta)
 
+    # Obtener la hora del primer detalle (si existe)
+    hora_venta = detalles_venta.first().hora if detalles_venta.exists() else None
+
     context = {
         'venta': venta,
-        'detalles_venta': detalles_venta,  # Asegúrate de usar 'detalles_venta'
+        'detalles_venta': detalles_venta,
+        'hora_venta': hora_venta,  # Pasar la hora del primer detalle al contexto
     }
     return render(request, 'ventas/detalle_venta.html', context)
 
@@ -192,3 +200,41 @@ def obtener_precio_producto(request, producto_id):
     producto = get_object_or_404(Producto, id=producto_id)
     return JsonResponse({'precio': str(producto.precio)})
 
+"""-------------------------------------------------------------------------------------------------------------------------------------------------
+"""
+
+# Vista para listar clientes
+def cliente_lista(request):
+    clientes = Cliente.objects.all()
+    return render(request, 'clientes/cliente_lista.html', {'clientes': clientes})
+
+# Vista para agregar cliente
+def cliente_agregar(request):
+    if request.method == 'POST':
+        form = ClienteForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('cliente_lista')
+    else:
+        form = ClienteForm()
+    return render(request, 'clientes/cliente_form.html', {'form': form})
+
+# Vista para editar cliente
+def cliente_editar(request, pk):
+    cliente = get_object_or_404(Cliente, pk=pk)
+    if request.method == 'POST':
+        form = ClienteForm(request.POST, instance=cliente)
+        if form.is_valid():
+            form.save()
+            return redirect('cliente_lista')
+    else:
+        form = ClienteForm(instance=cliente)
+    return render(request, 'clientes/cliente_form.html', {'form': form})
+
+# Vista para eliminar cliente
+def cliente_eliminar(request, pk):
+    cliente = get_object_or_404(Cliente, pk=pk)
+    if request.method == 'POST':
+        cliente.delete()
+        return redirect('cliente_lista')
+    return render(request, 'clientes/cliente_confirm_delete.html', {'cliente': cliente})

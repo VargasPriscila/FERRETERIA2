@@ -1,6 +1,6 @@
 # miAplicacion/forms.py
 from django import forms
-from .models import (Categoria, Proveedor, Producto, Venta, DetalleVenta,)
+from .models import (Categoria, Proveedor, Producto, Venta, DetalleVenta,Cliente)
 
 class CategoriaForm(forms.ModelForm):
     class Meta:
@@ -57,3 +57,10 @@ class DetalleVentaForm(forms.ModelForm):
         if cantidad is None or cantidad <= 0:
             raise forms.ValidationError("La cantidad debe ser un número positivo.")
         return cantidad
+    
+    
+
+class ClienteForm(forms.ModelForm):
+    class Meta:
+        model = Cliente
+        fields = ['nombre', 'apellido', 'documento', 'direccion', 'telefono', 'email']

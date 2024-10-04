@@ -32,6 +32,11 @@ urlpatterns = [
     # DetalleVenta
     path('ventas/<int:venta_id>/', views.detalle_venta, name='detalle_venta'),
     
+    #Clientes
+    path('clientes/', views.cliente_lista, name='cliente_lista'),
+    path('clientes/agregar/', views.cliente_agregar, name='cliente_agregar'),
+    path('clientes/editar/<int:pk>/', views.cliente_editar, name='cliente_editar'),
+    path('clientes/eliminar/<int:pk>/', views.cliente_eliminar, name='cliente_eliminar'),
     
     
     
