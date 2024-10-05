@@ -1,3 +1,4 @@
+
 {% extends 'base.html' %}
 
 {% block content %}
@@ -18,4 +19,19 @@
 </div>
 {% endblock %}
 
+<!--
+"""
+Plantilla para confirmar la eliminación de una categoría en una aplicación web de Django.
 
+Esta plantilla extiende un archivo base HTML y muestra una página de confirmación
+donde se pregunta al usuario si desea eliminar una categoría específica. Se muestra
+el nombre de la categoría e incluye un formulario con un token CSRF para seguridad.
+El formulario proporciona dos botones: uno para confirmar la eliminación (con una solicitud POST)
+y otro para cancelar y redirigir a la lista de categorías.
+
+Bloques:
+    - content: Contiene el mensaje de confirmación, los detalles de la categoría y el formulario para la eliminación.
+
+Variables de contexto:
+    - categoria: El objeto categoría que se está eliminando, específicamente su atributo 'nombre'.
+"""-->

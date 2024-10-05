@@ -1,3 +1,4 @@
+
 {% extends 'base.html' %}
 {% block title %}Categorías{% endblock %}
 {% block content %}
@@ -34,3 +35,22 @@
 </div>
 {% endblock %}
 
+<!--
+"""
+Plantilla para la lista de categorías en una aplicación web de Django.
+
+Esta plantilla extiende un archivo base HTML y muestra una tabla con las categorías existentes,
+permitiendo al usuario ver, editar o eliminar cada categoría. También ofrece un botón para
+agregar una nueva categoría.
+
+Bloques:
+    - title: Establece el título de la página como "Categorías".
+    - content: Contiene la tabla con las categorías y las acciones disponibles (editar o eliminar), 
+      así como el botón para agregar una nueva categoría.
+
+Variables de contexto:
+    - categorias: Un queryset que contiene todas las categorías disponibles, con los siguientes atributos:
+        - id: Identificador único de la categoría.
+        - nombre: Nombre de la categoría.
+        - descripcion: Descripción de la categoría.
+""" -->

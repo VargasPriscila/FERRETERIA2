@@ -1,3 +1,4 @@
+
 {% extends 'base.html' %}
 
 {% block content %}
@@ -20,5 +21,20 @@
 </div>
 {% endblock %}
 
+<!--
+"""
+Plantilla para crear o editar una categoría en una aplicación web de Django.
 
+Esta plantilla extiende un archivo base HTML y muestra un formulario que se adapta
+según si se está creando una nueva categoría o editando una existente. Usa un formulario
+de Django para capturar los datos de la categoría y muestra un botón de acción que cambia
+dinámicamente entre "Crear" y "Actualizar" según si la categoría ya existe o no.
 
+Bloques:
+    - content: Contiene el formulario para la creación o edición de la categoría, con los botones correspondientes.
+
+Variables de contexto:
+    - form: El formulario de Django para la categoría, que puede ser utilizado para crear o editar.
+        - form.instance.pk: Se usa para determinar si la categoría ya existe (es decir, si se está editando)
+          o si es una nueva categoría (es decir, si se está creando).
+"""-->

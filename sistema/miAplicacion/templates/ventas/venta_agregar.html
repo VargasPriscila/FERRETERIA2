@@ -168,6 +168,42 @@ document.getElementById('monto_pago').addEventListener('input', calcularVuelto);
 {% endblock %}
 
 
+<!--
+"""
+Plantilla para agregar una nueva venta en la aplicación web de Ferretería.
+
+Esta plantilla extiende un archivo base HTML y permite al usuario ingresar los 
+detalles de una venta, incluyendo la selección de productos, cantidades y 
+monto de pago. Además, muestra el total de la venta, el vuelto y la cantidad que falta.
+
+Bloques:
+    - title: Establece el título de la página como "Agregar Venta".
+    - content: Contiene el formulario para agregar una venta y una tabla para 
+      seleccionar productos y sus detalles.
+
+Variables de contexto:
+    - venta_form: Un formulario que incluye los campos necesarios para la 
+      venta, como cliente y medio de pago.
+    - productos: Una lista de productos disponibles para seleccionar, que 
+      incluye el id y el nombre de cada producto.
+
+Elementos de la interfaz:
+    - Tabla de productos: Permite al usuario seleccionar productos, ingresar 
+      cantidades y ver el importe total.
+    - Campos para monto de pago: Permite ingresar el monto con el que el cliente 
+      paga y muestra el vuelto y la cantidad que falta.
+
+Funciones JavaScript:
+    - agregarEventosFila: Agrega eventos a los elementos de una fila de 
+      producto para manejar cambios en la selección de productos y cantidades.
+    - actualizarImporte: Calcula el importe total para la fila del producto 
+      según el precio y la cantidad.
+    - actualizarTotal: Calcula y actualiza el total de la venta.
+    - actualizarDisponibilidadProductos: Habilita o deshabilita productos en 
+      la selección según los productos ya seleccionados.
+    - calcularVuelto: Calcula y muestra el vuelto o la cantidad que falta 
+      según el monto de pago ingresado.
+""" -->
 
 
 
