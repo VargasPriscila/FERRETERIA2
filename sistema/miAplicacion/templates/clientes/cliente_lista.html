@@ -17,12 +17,13 @@
                     <th>Dirección</th>
                     <th>Teléfono</th>
                     <th>Email</th>
+                    <th>Compras</th>
                     <th class="text-center">Acciones</th>
                 </tr>
             </thead>
             <tbody>
                 {% for cliente in clientes %}
-                <tr>
+                <tr onclick="window.location='{% url 'cliente_ventas' cliente.id %}'">
                     <td>{{ cliente.id }}</td>
                     <td>{{ cliente.nombre }}</td>
                     <td>{{ cliente.apellido }}</td>
@@ -30,7 +31,10 @@
                     <td>{{ cliente.direccion }}</td>
                     <td>{{ cliente.telefono }}</td>
                     <td>{{ cliente.email }}</td>
+                    <td>{{ cliente.compras_recientes }} compras</td>
+
                     <td class="text-center">
+                        </a>
                         <a href="{% url 'cliente_editar' cliente.id %}" class="btn btn-warning btn-sm">Editar</a>
                         <a href="{% url 'cliente_eliminar' cliente.id %}" class="btn btn-danger btn-sm">Eliminar</a>
                     </td>

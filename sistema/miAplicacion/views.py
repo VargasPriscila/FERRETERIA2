@@ -5,6 +5,8 @@ from .forms import (CategoriaForm, ProveedorForm, ProductoForm,VentaForm, Detall
 from django.shortcuts import render
 from django.db import transaction
 from django.http import JsonResponse
+from django.db.models import Count
+
 
 
 
@@ -205,8 +207,9 @@ def obtener_precio_producto(request, producto_id):
 
 # Vista para listar clientes
 def cliente_lista(request):
-    clientes = Cliente.objects.all()
+    clientes = Cliente.objects.annotate(compras_recientes=Count('venta'))
     return render(request, 'clientes/cliente_lista.html', {'clientes': clientes})
+
 
 # Vista para agregar cliente
 def cliente_agregar(request):
@@ -238,3 +241,10 @@ def cliente_eliminar(request, pk):
         cliente.delete()
         return redirect('cliente_lista')
     return render(request, 'clientes/cliente_confirm_delete.html', {'cliente': cliente})
+
+# Función para obtener la cantidad de compras realizadas por cliente
+
+def cliente_ventas(request, pk):
+    cliente = get_object_or_404(Cliente, pk=pk)
+    ventas = Venta.objects.filter(cliente=cliente)
+    return render(request, 'clientes/cliente_ventas.html', {'cliente': cliente, 'ventas': ventas})
