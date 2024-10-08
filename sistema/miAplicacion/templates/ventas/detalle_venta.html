@@ -38,3 +38,33 @@
     <button type="button" onclick="window.location.href='{% url 'venta_lista' %}'" class="btn btn-secondary">Atrás</button>
 </div>
 {% endblock %}
+
+
+<!--
+"""
+Plantilla para mostrar los detalles de una venta en la aplicación web de Ferretería.
+
+Esta plantilla extiende un archivo base HTML y presenta un resumen de la venta, 
+incluyendo la fecha, hora, cliente, medio de pago, número de comprobante e importe total. 
+También muestra una tabla con los productos que fueron comprados en la venta, 
+incluyendo su nombre, cantidad, precio unitario y subtotal.
+
+Bloques:
+    - title: Establece el título de la página como "Detalle de la Venta".
+    - content: Contiene la información detallada de la venta y una tabla con los productos adquiridos.
+
+Variables de contexto:
+    - venta: Un objeto que representa la venta, con los siguientes atributos:
+        - fecha: La fecha en que se realizó la venta.
+        - cliente: El cliente que realizó la compra.
+        - medio_de_pago: El método de pago utilizado.
+        - numero_comprobante: El número de comprobante de la venta.
+        - importe_total: El importe total de la venta.
+
+    - detalles_venta: Un queryset que contiene los detalles de los productos de la venta, 
+      con los siguientes atributos:
+        - hora: La hora en que se realizó la venta.
+        - producto: Un objeto que representa el producto vendido, con el atributo nombre.
+        - cantidad: La cantidad de productos comprados.
+        - precio_unitario: El precio por unidad del producto.
+""" -->

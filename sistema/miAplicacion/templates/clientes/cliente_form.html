@@ -11,3 +11,24 @@
     </form>
 </div>
 {% endblock %}
+
+
+<!--
+"""
+Plantilla para agregar o editar un cliente en una aplicación web de Django.
+
+Esta plantilla extiende un archivo base HTML y muestra un formulario que se adapta
+dinámicamente para la creación de un nuevo cliente o la edición de uno existente. 
+Incluye un botón de acción que cambia entre "Guardar" y "Agregar" según si el cliente
+ya existe (editar) o no (crear), y un enlace para cancelar la operación.
+
+Bloques:
+    - title: Establece el título de la página como "Editar Cliente" o "Agregar Cliente" 
+      dependiendo de si se está creando o editando un cliente.
+    - content: Contiene el formulario de cliente con los botones de "Guardar/Agregar" y "Cancelar".
+
+Variables de contexto:
+    - form: El formulario de Django para capturar o editar los datos del cliente.
+        - form.instance.pk: Se usa para determinar si el cliente ya existe, en cuyo caso se está editando, 
+          o si se está creando uno nuevo.
+""" -->

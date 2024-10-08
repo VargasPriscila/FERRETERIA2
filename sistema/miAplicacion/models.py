@@ -1,3 +1,11 @@
+"""
+Este módulo define los modelos principales para un sistema de gestión de una ferretería.
+
+El sistema permite gestionar clientes, productos, proveedores, ventas, pedidos y la facturación.
+A través de estos modelos, se puede realizar un seguimiento del inventario, registrar las transacciones de venta, gestionar los pedidos a proveedores y emitir facturas.
+Los modelos están diseñados para trabajar de manera interconectada, actualizando automáticamente la información relevante, como el stock de productos y el importe total de las ventas.
+
+"""
 import random
 from django.db import models, transaction
 from django.db.models import Sum
@@ -6,6 +14,24 @@ from decimal import Decimal
 
 
 class Cliente(models.Model):
+    """
+    Modelo que representa un cliente.
+
+    Atributos:
+    -----------
+    nombre : str
+        Nombre del cliente.
+    apellido : str
+        Apellido del cliente.
+    documento : str
+        Documento de identidad del cliente.
+    direccion : str
+        Dirección del cliente.
+    telefono : str
+        Teléfono del cliente.
+    email : EmailField
+        Correo electrónico del cliente.
+    """
     nombre = models.CharField(max_length=50)
     apellido = models.CharField(max_length=100)
     documento = models.CharField(max_length=50)
@@ -14,21 +40,62 @@ class Cliente(models.Model):
     email = models.EmailField(default='', blank=True)
 
     def __str__(self):
+        """
+        Devuelve una representación en cadena del cliente.
+
+        Atributos:
+        ----------
+        nombre : str
+            Nombre de la categoría.
+        descripcion : TextField
+            Descripción de la categoría (opcional).
+
+        """
         return f"{self.nombre} {self.apellido}"
+
+
 
 
 class Categoria(models.Model):
     """
     Modelo que representa una categoría de productos.
+
+    Atributos:
+    ----------
+    nombre : str
+        Nombre de la categoría.
+    descripcion : TextField
+        Descripción de la categoría (opcional).
     """
     nombre = models.CharField(max_length=50, unique=True)
     descripcion = models.TextField(blank=True, null=True)
 
     def __str__(self):
+        """
+        Devuelve una representación en cadena de la categoría.
+        """
         return self.nombre
 
 
+
+
 class Proveedor(models.Model):
+    """
+    Modelo que representa un proveedor de productos.
+
+    Atributos:
+    ----------
+    nombre : str
+        Nombre del proveedor.
+    tipo_producto : str
+        Tipo de producto que ofrece el proveedor.
+    telefono : str
+        Número de teléfono del proveedor.
+    email : EmailField
+        Correo electrónico del proveedor.
+    direccion : str
+        Dirección física del proveedor.
+    """
     nombre = models.CharField(max_length=100)
     tipo_producto = models.CharField(max_length=100, default='')
     telefono = models.CharField(max_length=15, default='')
@@ -36,12 +103,30 @@ class Proveedor(models.Model):
     direccion = models.CharField(max_length=200, default='', blank=True)
 
     def __str__(self):
+        """
+        Devuelve una representación en cadena del proveedor.
+        """
         return self.nombre
+
+
 
 
 class MovimientoStock(models.Model):
     """
     Modelo que representa un movimiento de stock (entrada o salida).
+
+    Atributos:
+    ----------
+    producto : ForeignKey
+        Producto relacionado con el movimiento.
+    tipo : str
+        Tipo de movimiento ('entrada' o 'salida').
+    cantidad : int
+        Cantidad involucrada en el movimiento.
+    fecha : DateTimeField
+        Fecha en que se realizó el movimiento.
+    comprobante : str
+        Comprobante asociado con el movimiento (opcional).
     """
     TIPO_MOVIMIENTO = [
         ('entrada', 'Entrada'),
@@ -55,9 +140,15 @@ class MovimientoStock(models.Model):
     comprobante = models.TextField(blank=True, null=True)
 
     def __str__(self):
+        """
+        Devuelve una representación en cadena del movimiento de stock.
+        """
         return f'{self.tipo} - {self.producto.nombre} - {self.cantidad}'
 
     def save(self, *args, **kwargs):
+        """
+        Guarda el movimiento de stock y actualiza el stock del producto.
+        """
         super().save(*args, **kwargs)  # Llamar primero al método save original
 
         if self.tipo == 'entrada':
@@ -65,34 +156,82 @@ class MovimientoStock(models.Model):
         self.producto.save()  # Guardar los cambios en el producto
 
 
+
+
 class Pedido(models.Model):
     """
     Modelo que representa un pedido realizado a un proveedor.
+
+    Atributos:
+    ----------
+    proveedor : ForeignKey
+        Proveedor al que se realiza el pedido.
+    fecha_pedido : DateTimeField
+        Fecha en que se realizó el pedido.
+    recibido : bool
+        Indica si el pedido ha sido recibido.
     """
     proveedor = models.ForeignKey('Proveedor', on_delete=models.CASCADE)
     fecha_pedido = models.DateTimeField(auto_now_add=True)
     recibido = models.BooleanField(default=False)
 
     def __str__(self):
+        """
+        Devuelve una representación en cadena del pedido.
+        """
         return f'Pedido a {self.proveedor} - {self.fecha_pedido}'
+
+
 
 
 class DetallePedido(models.Model):
     """
-    Modelo que representa el detalle de un pedido, es decir, los productos y sus cantidades.
+    Modelo que representa el detalle de un pedido (productos y cantidades).
+
+    Atributos:
+    ----------
+    pedido : ForeignKey
+        Pedido al que pertenece este detalle.
+    producto : ForeignKey
+        Producto que se incluye en el pedido.
+    cantidad : int
+        Cantidad de productos solicitados.
+    precio_unitario : Decimal
+        Precio unitario del producto.
     """
+
     pedido = models.ForeignKey('Pedido', on_delete=models.CASCADE, related_name='detalles')
     producto = models.ForeignKey('Producto', on_delete=models.CASCADE)
     cantidad = models.IntegerField()
     precio_unitario = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
 
     def __str__(self):
+        """
+        Devuelve una representación en cadena del detalle del pedido.
+        """
         return f'{self.producto} - {self.cantidad} unidades'
+
+
 
 
 class Producto(models.Model):
     """
     Modelo que representa un producto en el sistema.
+
+    Atributos:
+    ----------
+    nombre : str
+        Nombre del producto.
+    descripcion : str
+        Descripción del producto.
+    precio : Decimal
+        Precio del producto.
+    cantidad_stock : int
+        Cantidad en stock del producto.
+    categoria : ForeignKey
+        Categoría a la que pertenece el producto.
+    proveedor : ForeignKey
+        Proveedor del producto (opcional).
     """
     nombre = models.CharField(max_length=100)
     descripcion = models.TextField()
@@ -104,11 +243,23 @@ class Producto(models.Model):
     proveedor = models.ForeignKey('Proveedor', on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
+        """
+        Devuelve una representación en cadena del producto.
+        """
         return self.nombre
 
 
 
+
 class MedioDePago(models.Model):
+    """
+    Modelo que representa un medio de pago disponible en el sistema.
+
+    Atributos:
+    ----------
+    nombre : str
+        Tipo de medio de pago (Efectivo, Tarjeta de Crédito, Débito, Transferencia Bancaria, etc.).
+    """
     TIPO_PAGO_CHOICES = [
         ('EF', 'Efectivo'),
         ('TC', 'Tarjeta de Crédito'),
@@ -118,10 +269,35 @@ class MedioDePago(models.Model):
     nombre = models.CharField(max_length=2, choices=TIPO_PAGO_CHOICES, unique=True)
 
     def __str__(self):
+        """
+        Devuelve una representación legible del medio de pago.
+        """
         return self.get_nombre_display()
 
 
+
+
 class Venta(models.Model):
+    """
+    Modelo que representa una venta en el sistema.
+
+    Atributos:
+    ----------
+    fecha : DateField
+        Fecha de la venta.
+    numero_comprobante : str
+        Número único de comprobante asociado a la venta.
+    cliente : ForeignKey
+        Cliente que realizó la compra.
+    medio_de_pago : ForeignKey
+        Medio de pago utilizado en la venta.
+    detalle_ventas : ManyToManyField
+        Productos comprados a través de la venta.
+    importe_total : Decimal
+        Importe total de la venta.
+    anulada : bool
+        Indica si la venta ha sido anulada.
+    """
     fecha = models.DateField(default=timezone.now)
     numero_comprobante = models.CharField(max_length=13, unique=True, verbose_name="Número de Comprobante")
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, default=None, null=True)
@@ -131,6 +307,9 @@ class Venta(models.Model):
     anulada = models.BooleanField(default=False)  # Nuevo campo
 
     def __str__(self):
+        """
+        Devuelve una representación en cadena de la venta.
+        """
         return str(self.numero_comprobante)
 
     def calcular_importe_total(self):
@@ -155,7 +334,27 @@ class Venta(models.Model):
                 return numero
 
 
+
+
 class DetalleVenta(models.Model):
+    """
+    Modelo que representa el detalle de una venta (producto, cantidad, precio).
+
+    Atributos:
+    ----------
+    venta : ForeignKey
+        Venta a la que pertenece este detalle.
+    producto : ForeignKey
+        Producto vendido en este detalle.
+    cantidad : int
+        Cantidad de productos vendidos.
+    precio_unitario : Decimal
+        Precio unitario del producto en el momento de la venta.
+    importe : Decimal
+        Importe total de este detalle (cantidad * precio unitario).
+    hora : DateTimeField
+        Hora en que se realizó la venta.
+    """
     venta = models.ForeignKey('Venta', on_delete=models.CASCADE, default=None, null=True)
     producto = models.ForeignKey('Producto', on_delete=models.CASCADE, default=None, null=True)
     cantidad = models.PositiveIntegerField(default=None, null=True)  # Cambiado a PositiveIntegerField
@@ -164,6 +363,9 @@ class DetalleVenta(models.Model):
     hora = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
+        """
+        Devuelve una representación en cadena del detalle de venta.
+        """
         venta_str = str(self.venta) if self.venta else "No Venta"
         producto_str = str(self.producto) if self.producto else "No Producto"
         cantidad_str = str(self.cantidad) if self.cantidad is not None else "No Cantidad"
@@ -186,17 +388,49 @@ class DetalleVenta(models.Model):
 
 
 
+
 class Factura(models.Model):
+    """
+    Modelo que representa una factura generada en el sistema.
+
+    Atributos:
+    ----------
+    fecha : DateField
+        Fecha en la que se generó la factura.
+    cliente : ForeignKey
+        Cliente asociado a la factura (opcional).
+    """
     fecha = models.DateField()
     cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT, default=None, null=True, blank=True)
 
     @property
     def importe_total(self):
+        """
+        Calcula el importe total de la factura sumando los precios unitarios por cantidad de los detalles.
+        """
         total = self.detalles.aggregate(total=Sum(models.F('precio_unitario') * models.F('cantidad')))['total']
         return total if total is not None else 0
 
 
+
+
 class DetalleFactura(models.Model):
+    """
+    Modelo que representa el detalle de una factura.
+
+    Atributos:
+    ----------
+    factura : ForeignKey
+        Factura a la que pertenece este detalle.
+    producto : ForeignKey
+        Producto que aparece en la factura.
+    cantidad : int
+        Cantidad de productos en el detalle.
+    precio_unitario : Decimal
+        Precio unitario del producto.
+    medio_de_pago : ForeignKey
+        Medio de pago utilizado para este detalle.
+    """
     factura = models.ForeignKey(Factura, related_name='detalles', on_delete=models.CASCADE)
     producto = models.ForeignKey(Producto, on_delete=models.PROTECT, default=None, null=True, blank=True)
     cantidad = models.PositiveIntegerField()
@@ -204,4 +438,7 @@ class DetalleFactura(models.Model):
     medio_de_pago = models.ForeignKey(MedioDePago, on_delete=models.CASCADE, default=None, null=True)
 
     def __str__(self):
+        """
+        Devuelve una representación en cadena del detalle de la factura.
+        """
         return f"{self.cantidad} x {self.producto.nombre} ({self.get_medio_de_pago_display()})"
