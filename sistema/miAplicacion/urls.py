@@ -59,7 +59,7 @@ urlpatterns = [
     path('clientes/agregar/', views.cliente_agregar, name='cliente_agregar'),
     path('clientes/editar/<int:pk>/', views.cliente_editar, name='cliente_editar'),
     path('clientes/eliminar/<int:pk>/', views.cliente_eliminar, name='cliente_eliminar'),
-    path('clientes/compras/<int:pk>/', views.cliente_compras, name='cliente_compras'),  # Nueva URL
+    path('compras/<int:pk>/', clienteCompras.as_view(), name='cliente_compras'),
 
     
     

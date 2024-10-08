@@ -23,7 +23,7 @@
             </thead>
             <tbody>
                 {% for cliente in clientes %}
-                <tr onclick="window.location='{% url 'cliente_ventas' cliente.id %}'">
+                <tr onclick="window.location='{% url 'cliente_compras' cliente.id %}'">
                     <td>{{ cliente.id }}</td>
                     <td>{{ cliente.nombre }}</td>
                     <td>{{ cliente.apellido }}</td>

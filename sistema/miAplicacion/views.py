@@ -21,6 +21,8 @@ from django.shortcuts import render
 from django.db import transaction
 from django.http import JsonResponse
 from django.db.models import Count
+from django.views.generic import ListView
+from django.db.models import Q
 
 
 
@@ -409,16 +411,28 @@ def cliente_eliminar(request, pk):
 
 # Función para obtener la cantidad de compras realizadas por cliente
 
-def cliente_compras(request, pk):
-    cliente = get_object_or_404(Cliente, pk=pk)
-    ventas = Venta.objects.filter(cliente=cliente)
-    return render(request, 'clientes/cliente_compras.html', {'cliente': cliente, 'ventas': ventas})
-
 
 
 
 # ------------------------------ PAGINACIÓN --------------------------------------------------
+class clienteCompras(ListView):
+    model = Venta
+    template_name = 'cliente_compras.html'
+    context_object_name = 'ventas'
+    paginate_by = 10
 
-class 
+    def get_queryset(self):
+        cliente = get_object_or_404(Cliente, pk=self.kwargs['pk'])  # Obtener el cliente usando el pk
+        queryset = super().get_queryset().filter(cliente=cliente)  # Filtrar ventas por el cliente
+        query = self.request.GET.get('q')  # Considerando el caso de búsqueda
+        if query:
+            queryset = queryset.filter(Q(titulo__icontains=query) | Q(de__icontains=query))
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['cliente'] = get_object_or_404(Cliente, pk=self.kwargs['pk'])  # Obtener el cliente
+        return context
+
 
 

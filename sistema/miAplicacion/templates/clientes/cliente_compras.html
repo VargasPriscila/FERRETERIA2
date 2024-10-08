@@ -6,7 +6,8 @@
     <h1 class="text-center">Historial de Compras de {{ cliente.nombre }} {{ cliente.apellido }}</h1>
     <table class="table table-striped table-hover align-middle">
         <thead class="table-dark">
-            <tr><th>Venta</th>
+            <tr>
+                <th>Venta</th>
                 <th>Fecha</th>
                 <th>Número de Comprobante</th>
                 <th>Medio de Pago</th>
@@ -16,20 +17,34 @@
         <tbody>
             {% for venta in ventas %}
             <tr>
-                <td>{{ forloop.counter }}</forloop></td>
+                <td>{{ forloop.counter }}</td>
                 <td>{{ venta.fecha }}</td>
                 <td>{{ venta.numero_comprobante }}</td>
                 <td>{{ venta.medio_de_pago }}</td>
                 <td> $ {{ venta.importe_total }}</td>
-                <td> </td>
-                
             </tr>
             {% empty %}
             <tr>
-                <td colspan="4" class="text-center">Este cliente no ha realizado compras.</td>
+                <td colspan="5" class="text-center">Este cliente no ha realizado compras.</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
+<div class="paginación justify-content-center">
+    {% if page_obj.has_previous %}
+        <a class="btn btn-outline-primary mb-3" href="?page={{ page_obj.previous_page_number }}">Atras</a>
+    {% endif %}
+
+    <span class="current-page btn btn-outline-light disabled text-primary mb-3">{{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+
+    {% if page_obj.has_next %}
+        <a class="btn btn-outline-primary mb-3" href="?page={{ page_obj.next_page_number }}">Siguiente</a>
+    {% endif %}
+
+    <a class="btn btn-outline-primary mb-3" href="?page=1{{ request.GET.urlencode|add:'&' }}">Primera</a>
+    <a class="btn btn-outline-primary mb-3" href="?page={{ page_obj.paginator.num_pages }}{{ request.GET.urlencode|add:'&' }}">Última</a>
+
+</div>
 {% endblock %}
+
