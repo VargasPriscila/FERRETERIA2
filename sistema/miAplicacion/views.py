@@ -409,7 +409,16 @@ def cliente_eliminar(request, pk):
 
 # Función para obtener la cantidad de compras realizadas por cliente
 
-def cliente_ventas(request, pk):
+def cliente_compras(request, pk):
     cliente = get_object_or_404(Cliente, pk=pk)
     ventas = Venta.objects.filter(cliente=cliente)
-    return render(request, 'clientes/cliente_ventas.html', {'cliente': cliente, 'ventas': ventas})
+    return render(request, 'clientes/cliente_compras.html', {'cliente': cliente, 'ventas': ventas})
+
+
+
+
+# ------------------------------ PAGINACIÓN --------------------------------------------------
+
+class 
+
+
