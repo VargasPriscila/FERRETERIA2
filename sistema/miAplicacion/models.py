@@ -202,7 +202,7 @@ class DetallePedido(models.Model):
 
     pedido = models.ForeignKey('Pedido', on_delete=models.CASCADE, related_name='detalles')
     producto = models.ForeignKey('Producto', on_delete=models.CASCADE)
-    cantidad = models.IntegerField()
+    cantidad = models.PositiveIntegerField()
     precio_unitario = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
 
     def __str__(self):
@@ -236,7 +236,7 @@ class Producto(models.Model):
     nombre = models.CharField(max_length=100)
     descripcion = models.TextField()
     precio = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    cantidad_stock = models.IntegerField()
+    cantidad_stock = models.PositiveIntegerField()
     categoria = models.ForeignKey('Categoria', on_delete=models.SET_NULL, null=True)
     fecha_creacion = models.DateField(auto_now_add=True)
     fecha_actualizacion = models.DateTimeField(auto_now=True)

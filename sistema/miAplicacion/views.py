@@ -414,7 +414,7 @@ def cliente_eliminar(request, pk):
 
 
 
-# ------------------------------ PAGINACIÓN --------------------------------------------------
+# ------------------------------ PAGINACIÓN DE LA LISTA DE COMPRAS --------------------------------------------------
 class clienteCompras(ListView):
     model = Venta
     template_name = 'clientes/cliente_compras.html'
