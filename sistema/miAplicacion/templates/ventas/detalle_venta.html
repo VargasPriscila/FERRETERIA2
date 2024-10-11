@@ -4,10 +4,13 @@
 {% block title %}Detalle de la Venta{% endblock %}
 {% block content %}
 <div class="container my-5">
-    <h1>Detalle de la Venta</h1>
+    <button type="button" onclick="window.location.href='{% url 'venta_lista' %}'" class="btn btn-secondary">Atrás</button>
+    <h1 class="text-center">Detalle de la Venta</h1>
     <p><strong>Fecha:</strong> {{ venta.fecha }}</p>
     <p><strong>Hora:</strong> {{ detalles_venta.0.hora|time:"H:i" }}</p>
-    <p><strong>Cliente:</strong> {{ venta.cliente }}</p>
+
+    <p class="cliente-link"><strong>Cliente:</strong> <a class="cliente-link" href="{% url 'cliente_compras' venta.cliente.id %}">{{ venta.cliente }}</a></p>
+    
     <p><strong>Medio de Pago:</strong> {{ venta.medio_de_pago }}</p>
     <p><strong>Comprobante:</strong> {{ venta.numero_comprobante }}</p>
     <p><strong>Importe Total:</strong> {{ venta.importe_total }}</p>
@@ -33,9 +36,8 @@
             {% endfor %}
         </tbody>
     </table>
-
     <h3>Total de la Venta: {{ venta.importe_total }}</h3>
-    <button type="button" onclick="window.location.href='{% url 'venta_lista' %}'" class="btn btn-secondary">Atrás</button>
+    
 </div>
 {% endblock %}
 

@@ -235,7 +235,7 @@ class Producto(models.Model):
     """
     nombre = models.CharField(max_length=100)
     descripcion = models.TextField()
-    precio = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    precio = models.DecimalField(max_digits=10, decimal_places=2, default=0.000)
     cantidad_stock = models.PositiveIntegerField()
     categoria = models.ForeignKey('Categoria', on_delete=models.SET_NULL, null=True)
     fecha_creacion = models.DateField(auto_now_add=True)

@@ -57,3 +57,10 @@
     color: #721c24;
 }
 
+
+.cliente-link {
+    color:black; /* Cambia el color del enlace */
+    text-decoration: none; /* Elimina el subrayado */
+}
+
+

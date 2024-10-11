@@ -3,6 +3,7 @@
 
 {% block content %}
 <div class="container my-5">
+    <button type="button" onclick="window.location.href='{% url 'cliente_lista' %}'" class="btn btn-secondary">Atrás</button>
     <h1 class="text-center">Historial de Compras de {{ cliente.nombre }} {{ cliente.apellido }}</h1>
     <table class="table table-striped table-hover align-middle">
         <thead class="table-dark">
