@@ -241,6 +241,8 @@ class Producto(models.Model):
     fecha_creacion = models.DateField(auto_now_add=True)
     fecha_actualizacion = models.DateTimeField(auto_now=True)
     proveedor = models.ForeignKey('Proveedor', on_delete=models.SET_NULL, null=True, blank=True)
+    imagen = models.ImageField(upload_to='productos/', default='productos/default.png', blank=True, null=True)
+
 
     def __str__(self):
         """

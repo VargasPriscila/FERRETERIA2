@@ -5,7 +5,13 @@
     <h2 class="mb-4">{% if form.instance.pk %}Editar{% else %}Crear{% endif %} Producto</h2>
     <div class="card shadow-sm">
         <div class="card-body">
-            <form method="post">
+            <form method="post" enctype="multipart/form-data">  <!-- enctype="multipart/form-data": 
+                                                                Permite que el formulario envíe archivos. 
+                                                                Sin este atributo, si intentas cargar un 
+                                                                archivo (como una imagen), el archivo no 
+                                                                se enviará al servidor y no podrás procesarlo. 
+                                                                Al usar este tipo de codificación, cada archivo 
+                                                                y dato del formulario se envía correctamente. -->
                 {% csrf_token %}
                 {{ form.as_p }}
                 <div class="d-flex justify-content-between">

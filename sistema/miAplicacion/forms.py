@@ -87,7 +87,7 @@ class ProductoForm(forms.ModelForm):
     """
     class Meta:
         model = Producto
-        fields = ['nombre', 'descripcion', 'precio', 'cantidad_stock', 'categoria', 'proveedor']
+        fields = ['nombre', 'imagen', 'descripcion', 'precio', 'cantidad_stock', 'categoria', 'proveedor']
         widgets = {
             'nombre': forms.TextInput(attrs={'class': 'form-control'}),
             'descripcion': forms.TextInput(attrs={'class': 'form-control'}),

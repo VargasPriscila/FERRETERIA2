@@ -16,7 +16,7 @@
         </thead>
         <tbody>
             {% for venta in ventas %}
-            <tr>
+            <tr onclick="window.location='{% url 'detalle_venta' venta.id %}'">
                 <td>{{ venta.fecha }}</td>
                 <td>{{ venta.numero_comprobante }}</td>
                 <td>{{ venta.medio_de_pago }}</td>

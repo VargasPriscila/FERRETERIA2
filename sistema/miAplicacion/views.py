@@ -204,8 +204,23 @@ def productos_list(request):
     Returns:
         Renderiza la plantilla 'productos_list.html' con la lista de productos.
     """
-    productos = Producto.objects.all()
-    return render(request, 'productos/productos_list.html', {'productos': productos})
+    productos = Producto.objects.all().order_by('nombre', '-fecha_creacion')
+    
+    # Filtrar por categoría
+    categoria = request.GET.get('categoria')
+    if categoria and categoria != 'todo':
+        productos = productos.filter(categoria__nombre=categoria)
+
+    # Filtrar por proveedor
+    proveedor = request.GET.get('proveedor')
+    if proveedor:
+        productos = productos.filter(proveedor__nombre=proveedor)
+
+    # Obtener todas las categorías y proveedores
+    categorias = Categoria.objects.all()
+    proveedores = Proveedor.objects.all()
+    
+    return render(request, 'productos/productos_list.html', {'productos': productos,'categorias': categorias,'proveedores': proveedores})
 
 def productos_create(request):
     """
@@ -220,7 +235,7 @@ def productos_create(request):
         de productos si el formulario es válido.
     """
     if request.method == 'POST':
-        form = ProductoForm(request.POST)
+        form = ProductoForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
             return redirect('productos_list')
@@ -250,7 +265,7 @@ def productos_update(request, pk):
         form = ProductoForm(instance=producto)
     return render(request, 'productos/productos_form.html', {'form': form})
 
-def productos_delete(request, pk):
+def productos_confirm_delete(request, pk):
     """
     Elimina un producto existente basado en el identificador proporcionado.
     
@@ -284,7 +299,7 @@ def venta_lista(request):
     Returns:
         Renderiza la plantilla 'venta_lista.html' con la lista de ventas.
     """
-    ventas = Venta.objects.filter(anulada=False).all()
+    ventas = Venta.objects.filter(anulada=False).all().order_by('-fecha')
     return render(request, 'ventas/venta_lista.html', {'ventas': ventas})
 
 # Vista para agregar una venta

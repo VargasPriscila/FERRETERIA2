@@ -19,8 +19,20 @@ Including another URLconf
 # FERRETERIA2/urls.py
 from django.contrib import admin
 from django.urls import path, include  # Asegúrate de incluir 'include' aquí
+from django.conf import settings
+from django.conf.urls.static import static
+from miAplicacion import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('',include('miAplicacion.urls')),  # Incluye las URLs de tu aplicación aquí
-]
+    
+    # Incluye las rutas de tu aplicación 'miAplicacion'
+    path('', include('miAplicacion.urls')), 
+    
+    # Ruta para la página de inicio
+    path('Ferretería/', views.index, name='index'),  # Ruta para la página de inicio  # Utiliza la raíz para la página de inicio, en lugar de 'Ferretería'
+] 
+
+# Asegúrate de que los archivos estáticos y media sean servidos correctamente
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
