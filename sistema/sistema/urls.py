@@ -27,7 +27,10 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     
     # Incluye las rutas de tu aplicación 'miAplicacion'
-    path('', include('miAplicacion.urls')), 
+    path('', include('miAplicacion.urls')),
+    
+    # path para el Login
+    path ('accounts/', include('django.contrib.auth.urls')),
     
     # Ruta para la página de inicio
     path('Ferretería/', views.index, name='index'),  # Ruta para la página de inicio  # Utiliza la raíz para la página de inicio, en lugar de 'Ferretería'
