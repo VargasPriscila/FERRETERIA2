@@ -3,19 +3,23 @@
 
 {% block title %}Ferretería{% endblock %}
 
+
+
 {% block extra_styles %}
 <style>
-    .main-banner {
-        padding: 0;
-        background-image: url('{% static 'img/fondop.jpg' %}');
-        background-size: contain; /* Hace que la imagen cubra todo el contenedor */
-        background-position: center center; /* Centra la imagen */
+    .imagenFondo {
+        background-image: url('{% static 'img/fondo3.jpg' %}');
+        background-size: contain;
+        background-position: center center;
         background-repeat: no-repeat;
-        height: 79vh; /* Ocupa el 100% de la altura de la ventana */
-        width: 100%; /* Ocupa el 100% del ancho */
+        height: 100%;
+        width: 100%;
         margin: 0;
+        padding: 20px;
     }
-    
+    .container-fluid {
+        padding: 0;
+    }
 
     .main-content {
         text-align: center;
@@ -41,16 +45,7 @@
 {% endblock %}
 
 {% block content %}
-
-
-
-
-
-
-
-
-<div class="main-banner"></div> <!-- Esta es solo la imagen de fondo -->
-
+<div class="imagenFondo"></div> <!-- Esta es solo la imagen de fondo -->
 {% endblock %}
 
 <!--
