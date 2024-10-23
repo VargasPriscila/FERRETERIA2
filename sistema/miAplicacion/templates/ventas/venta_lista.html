@@ -1,11 +1,15 @@
 {% extends 'base.html' %}
+{% block search_url %}{% url 'venta_lista' %}{% endblock %}  <!-- Esto asegura que el formulario busque en la URL correcta -->
 {% block title %}Ventas{% endblock %}
+
 {% block content %}
 <div class="container mt-5">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2 class="mb-0">Ventas</h2>
         <a href="{% url 'venta_agregar' %}" class="btn btn-primary">Agregar Venta</a>
     </div>
+    <!-- Verificar si hay ventas -->
+    {% if ventas %}
     <div class="table-responsive">
         <table class="table table-striped table-hover align-middle">
             <thead class="table-dark">
@@ -16,7 +20,6 @@
                     <th>Importe Total</th>
                     <th>Número de Comprobante</th>
                     <th>Anular</th>
-
                 </tr>
             </thead>
             <tbody>
@@ -35,9 +38,14 @@
             </tbody>
         </table>
     </div>
-    
+    {% else %}
+    <!-- Mostrar un mensaje si no hay resultados -->
+    <p class= "text-center">No se encontraron ventas que coincidan con tu búsqueda.</p>
+    {% endif %}
 </div>
 {% endblock %}
+
+
 
 
 <!--

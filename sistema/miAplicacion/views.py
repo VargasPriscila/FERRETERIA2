@@ -23,6 +23,8 @@ from django.http import JsonResponse
 from django.db.models import Count
 from django.views.generic import ListView
 from django.db.models import Q
+from datetime import datetime
+
 
 
 
@@ -196,7 +198,8 @@ def categoria_delete(request, pk):
 
 def productos_list(request):
     """
-    Muestra una lista de todos los productos disponibles.
+    Muestra una lista de todos los productos disponibles y permite búsquedas por nombre, 
+    así como filtrado por categoría y proveedor.
     
     Args:
         request: El objeto de solicitud HTTP.
@@ -204,6 +207,7 @@ def productos_list(request):
     Returns:
         Renderiza la plantilla 'productos_list.html' con la lista de productos.
     """
+    # Obtener todos los productos, ordenados por nombre y fecha de creación
     productos = Producto.objects.all().order_by('nombre', '-fecha_creacion')
     
     # Filtrar por categoría
@@ -216,12 +220,27 @@ def productos_list(request):
     if proveedor:
         productos = productos.filter(proveedor__nombre=proveedor)
 
-    # Obtener todas las categorías y proveedores
+    # Búsqueda por nombre de producto
+    query = request.GET.get('q')
+    if query:
+        productos = productos.filter(Q(nombre__icontains=query))
+
+    # Obtener todas las categorías y proveedores para mostrarlas en el filtro
     categorias = Categoria.objects.all()
     proveedores = Proveedor.objects.all()
     
-    return render(request, 'productos/productos_list.html', {'productos': productos,'categorias': categorias,'proveedores': proveedores})
+    # Contexto que se pasa al template
+    context = {
+        'productos': productos,
+        'categorias': categorias,
+        'proveedores': proveedores,
+        'query': query,  # Mantener el valor de búsqueda en la barra
+        'busqueda_placeholder': 'nombre del Producto',
+        'categoria_seleccionada': categoria,  # Para mantener seleccionada la categoría actual
+        'proveedor_seleccionado': proveedor  # Para mantener seleccionado el proveedor actual
+    }
 
+    return render(request, 'productos/productos_list.html', context)
 def productos_create(request):
     """
     Crea un nuevo producto. Si se envía una solicitud POST válida, 
@@ -291,17 +310,35 @@ def productos_confirm_delete(request, pk):
 # Vista para listar ventas
 def venta_lista(request):
     """
-    Muestra una lista de todas las ventas no anuladas.
-    
-    Args:
-        request: El objeto de solicitud HTTP.
-    
-    Returns:
-        Renderiza la plantilla 'venta_lista.html' con la lista de ventas.
+    Muestra una lista de todas las ventas no anuladas, y permite búsquedas.
     """
-    ventas = Venta.objects.filter(anulada=False).all().order_by('-fecha')
-    return render(request, 'ventas/venta_lista.html', {'ventas': ventas})
+    query = request.GET.get('q')  # Obtener el valor de la búsqueda desde la barra
+    ventas = Venta.objects.filter(anulada=False)  # Filtrar solo ventas no anuladas
+    
+    # Si hay una búsqueda, filtrar por los campos indicados
+    if query:
+        try:
+            # Intentar interpretar la cadena como una fecha en formato 'DD-MM-YY'
+            fecha_buscada = datetime.strptime(query, '%d-%m-%y').date()  # Convierte a formato 'YYYY-MM-DD'
+            ventas = ventas.filter(fecha=fecha_buscada)
+        except ValueError:
+            # Si no es una fecha, buscar por cliente o número de comprobante
+            ventas = ventas.filter(
+                Q(cliente__nombre__icontains=query) |
+                Q(numero_comprobante__icontains=query)
+            )
 
+    # Ordenar las ventas por fecha
+    ventas = ventas.order_by('-fecha')
+
+    # Contexto que se pasa al template
+    context = {
+        'ventas': ventas,
+        'query': query,  # Para mantener el valor de búsqueda en la barra
+        'busqueda_placeholder': 'fecha(D-M-A),cliente,número de comprobante.'
+    }
+
+    return render(request, 'ventas/venta_lista.html', context)
 # Vista para agregar una venta
 @transaction.atomic
 def venta_agregar(request):

@@ -5,7 +5,7 @@
 {% block content %}
 <div class="container my-5">
     <button type="button" onclick="window.location.href='{% url 'venta_lista' %}'" class="btn btn-secondary">Atrás</button>
-    <h1 class="text-center">Detalle de la Venta</h1>
+    <h1 class="text-center">Detalle de la Compra</h1>
     <p><strong>Fecha:</strong> {{ venta.fecha }}</p>
     <p><strong>Hora:</strong> {{ detalles_venta.0.hora|time:"H:i" }}</p>
 

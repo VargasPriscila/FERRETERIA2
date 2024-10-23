@@ -103,10 +103,10 @@
                         <a class="nav-link" href="{% url 'cliente_lista' %}">Clientes</a>
                     </li>
                 </ul>
-                <form class="d-flex">
-                    <input class="form-control me-2" type="search" placeholder="Buscar" aria-label="Search">
+                <form class="d-flex" method="GET" action="{% block search_url %}{% endblock %}">
+                    <input class="form-control me-2" type="search" name="q" placeholder="Buscar por {{ busqueda_placeholder }}" aria-label="Search">
                     <button class="btn btn-outline-light" type="submit">Buscar</button>
-                </form>
+                </form>                
                 <ul class="nav navbar-nav ms-auto">
                     {% if user.is_authenticated %}
                         <li class="nav-item">
