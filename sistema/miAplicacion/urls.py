@@ -3,7 +3,8 @@ from django.urls import path
 from . import views
 from .views import obtener_precio_producto
 from .views import clienteCompras
-
+from .views import ProductosListView
+from .views import VentaListView
 
 """
 Configuración de URLs para el proyecto.
@@ -43,13 +44,15 @@ urlpatterns = [
     path('proveedores/eliminar/<int:pk>/', views.proveedor_delete, name='proveedor_delete'),
 
     # Productos
-    path('productos/', views.productos_list, name='productos_list'),
+# productos_list es una Class NO un def por eso esta diferente de las demas funciones que tiene Productos
+    path('productos/', ProductosListView.as_view(), name='productos_list'),
+    
     path('productos/agregar/', views.productos_create, name='productos_create'),
     path('productos/editar/<int:pk>/', views.productos_update, name='productos_update'),
     path('productos/eliminar/<int:pk>/', views.productos_confirm_delete, name='productos_confirm_delete'),
 
     # Ventas
-    path('ventas/', views.venta_lista, name='venta_lista'),
+    path('ventas/', VentaListView.as_view(), name='venta_lista'),
     path('ventas/agregar/', views.venta_agregar, name='venta_agregar'),
     path('ventas/anular/<int:pk>/', views.venta_anular, name='venta_anular'),
 

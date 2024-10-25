@@ -196,51 +196,46 @@ def categoria_delete(request, pk):
 
 # ------------------------------ Productos -------------------------------------------------
 
-def productos_list(request):
-    """
-    Muestra una lista de todos los productos disponibles y permite búsquedas por nombre, 
-    así como filtrado por categoría y proveedor.
-    
-    Args:
-        request: El objeto de solicitud HTTP.
-    
-    Returns:
-        Renderiza la plantilla 'productos_list.html' con la lista de productos.
-    """
-    # Obtener todos los productos, ordenados por nombre y fecha de creación
-    productos = Producto.objects.all().order_by('nombre', '-fecha_creacion')
-    
-    # Filtrar por categoría
-    categoria = request.GET.get('categoria')
-    if categoria and categoria != 'todo':
-        productos = productos.filter(categoria__nombre=categoria)
+class ProductosListView(ListView):
+    model = Producto
+    template_name = 'productos/productos_list.html'
+    context_object_name = 'productos'
+    ordering = ['nombre', '-fecha_creacion']
 
-    # Filtrar por proveedor
-    proveedor = request.GET.get('proveedor')
-    if proveedor:
-        productos = productos.filter(proveedor__nombre=proveedor)
+    def get_queryset(self):
+        queryset = super().get_queryset()
 
-    # Búsqueda por nombre de producto
-    query = request.GET.get('q')
-    if query:
-        productos = productos.filter(Q(nombre__icontains=query))
+        # Filtrar por categoría
+        categoria = self.request.GET.get('categoria')
+        if categoria and categoria != 'todo':
+            queryset = queryset.filter(categoria__nombre=categoria)
 
-    # Obtener todas las categorías y proveedores para mostrarlas en el filtro
-    categorias = Categoria.objects.all()
-    proveedores = Proveedor.objects.all()
+        # Filtrar por proveedor
+        proveedor = self.request.GET.get('proveedor')
+        if proveedor:
+            queryset = queryset.filter(proveedor__nombre=proveedor)
+
+        # Búsqueda por nombre de producto
+        query = self.request.GET.get('q')
+        if query:
+            queryset = queryset.filter(Q(nombre__icontains=query))
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Obtener todas las categorías y proveedores para los filtros
+        context['categorias'] = Categoria.objects.all()
+        context['proveedores'] = Proveedor.objects.all()
+        context['query'] = self.request.GET.get('q', '')  # Mantener la búsqueda en la barra
+        context['busqueda_placeholder'] = 'nombre del Producto'
+        context['categoria_seleccionada'] = self.request.GET.get('categoria', 'todo')
+        context['proveedor_seleccionado'] = self.request.GET.get('proveedor', '')
+
+        return context
     
-    # Contexto que se pasa al template
-    context = {
-        'productos': productos,
-        'categorias': categorias,
-        'proveedores': proveedores,
-        'query': query,  # Mantener el valor de búsqueda en la barra
-        'busqueda_placeholder': 'nombre del Producto',
-        'categoria_seleccionada': categoria,  # Para mantener seleccionada la categoría actual
-        'proveedor_seleccionado': proveedor  # Para mantener seleccionado el proveedor actual
-    }
-
-    return render(request, 'productos/productos_list.html', context)
+    
 def productos_create(request):
     """
     Crea un nuevo producto. Si se envía una solicitud POST válida, 
@@ -308,37 +303,33 @@ def productos_confirm_delete(request, pk):
 # ------------------------------ Ventas --------------------------------------------------
 
 # Vista para listar ventas
-def venta_lista(request):
-    """
-    Muestra una lista de todas las ventas no anuladas, y permite búsquedas.
-    """
-    query = request.GET.get('q')  # Obtener el valor de la búsqueda desde la barra
-    ventas = Venta.objects.filter(anulada=False)  # Filtrar solo ventas no anuladas
-    
-    # Si hay una búsqueda, filtrar por los campos indicados
-    if query:
-        try:
-            # Intentar interpretar la cadena como una fecha en formato 'DD-MM-YY'
-            fecha_buscada = datetime.strptime(query, '%d-%m-%y').date()  # Convierte a formato 'YYYY-MM-DD'
-            ventas = ventas.filter(fecha=fecha_buscada)
-        except ValueError:
-            # Si no es una fecha, buscar por cliente o número de comprobante
-            ventas = ventas.filter(
-                Q(cliente__nombre__icontains=query) |
-                Q(numero_comprobante__icontains=query)
-            )
+class VentaListView(ListView):
+    model = Venta
+    template_name = 'ventas/venta_lista.html'  # Plantilla que se va a renderizar
+    context_object_name = 'ventas'  # Nombre de la variable en el contexto
+    ordering = ['-fecha']  # Orden por defecto (descendente por fecha)
 
-    # Ordenar las ventas por fecha
-    ventas = ventas.order_by('-fecha')
+    def get_queryset(self):
+        queryset = super().get_queryset().filter(anulada=False)  # Filtrar solo ventas no anuladas
+        query = self.request.GET.get('q')  # Obtener el valor de la búsqueda desde la barra
+        if query:
+            try:
+                # Intentar interpretar la cadena como una fecha en formato 'DD-MM-YY'
+                fecha_buscada = datetime.strptime(query, '%d-%m-%y').date()  # Convierte a formato 'YYYY-MM-DD'
+                queryset = queryset.filter(fecha=fecha_buscada)
+            except ValueError:
+                # Si no es una fecha, buscar por cliente o número de comprobante
+                queryset = queryset.filter(
+                    Q(cliente__nombre__icontains=query) |
+                    Q(numero_comprobante__icontains=query)
+                )
+        return queryset
 
-    # Contexto que se pasa al template
-    context = {
-        'ventas': ventas,
-        'query': query,  # Para mantener el valor de búsqueda en la barra
-        'busqueda_placeholder': 'fecha(D-M-A),cliente,número de comprobante.'
-    }
-
-    return render(request, 'ventas/venta_lista.html', context)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['query'] = self.request.GET.get('q', '')  # Para mantener el valor de búsqueda en la barra
+        context['busqueda_placeholder'] = 'fecha(D-M-A),cliente,número de comprobante.'  # Placeholder
+        return context
 # Vista para agregar una venta
 @transaction.atomic
 def venta_agregar(request):
