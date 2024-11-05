@@ -15,6 +15,7 @@
             <thead class="table-dark ">
                 <tr>
                     <th>Fecha</th>
+                    <th>Hora</th>
                     <th>Cliente</th>
                     <th>Medio de Pago</th>
                     <th>Importe Total</th>
@@ -25,7 +26,8 @@
             <tbody>
                 {% for venta in ventas %}
                 <tr onclick="window.location='{% url 'detalle_venta' venta.id %}'">
-                    <td>{{ venta.fecha }}</td>
+                    <td>{{ venta.fecha|date:"d M Y" }}</td>
+                    <td>{{ venta.fecha|time:"H:i:s a"}}</td>
                     <td>{{ venta.cliente }}</td>
                     <td>{{ venta.medio_de_pago }}</td>
                     <td> $ {{ venta.importe_total }}</td>

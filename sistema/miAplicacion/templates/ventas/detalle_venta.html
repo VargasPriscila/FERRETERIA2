@@ -6,8 +6,9 @@
 <div class="container my-5">
     <button type="button" onclick="window.location.href='{% url 'venta_lista' %}'" class="btn btn-secondary">Atrás</button>
     <h1 class="text-center">Detalle de la Compra</h1>
-    <p><strong>Fecha:</strong> {{ venta.fecha }}</p>
-    <p><strong>Hora:</strong> {{ detalles_venta.0.hora|time:"H:i" }}</p>
+    <p><strong>Fecha:</strong> {{ venta.fecha|date:"d M Y" }}</p>
+    <p><strong>Hora:</strong> {{ venta.fecha|time:"H:i:s a" }}</p>
+
 
     <p class="cliente-link"><strong>Cliente:</strong> <a class="cliente-link" href="{% url 'cliente_compras' venta.cliente.id %}">{{ venta.cliente }}</a></p>
     

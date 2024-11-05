@@ -310,7 +310,7 @@ class VentaListView(ListView):
     ordering = ['-fecha']  # Orden por defecto (descendente por fecha)
 
     def get_queryset(self):
-        queryset = super().get_queryset().filter(anulada=False)  # Filtrar solo ventas no anuladas
+        queryset = super().get_queryset().filter(anulada=False).order_by('-fecha')  # Filtrar solo ventas no anuladas
         query = self.request.GET.get('q')  # Obtener el valor de la búsqueda desde la barra
         if query:
             try:
@@ -324,6 +324,8 @@ class VentaListView(ListView):
                     Q(numero_comprobante__icontains=query)
                 )
         return queryset
+    
+
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

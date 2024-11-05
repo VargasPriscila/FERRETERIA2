@@ -300,7 +300,7 @@ class Venta(models.Model):
     anulada : bool
         Indica si la venta ha sido anulada.
     """
-    fecha = models.DateField(default=timezone.now)
+    fecha = models.DateTimeField(default=timezone.now)
     numero_comprobante = models.CharField(max_length=13, unique=True, verbose_name="Número de Comprobante")
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, default=None, null=True)
     medio_de_pago = models.ForeignKey(MedioDePago, on_delete=models.CASCADE, default=None, null=True)
