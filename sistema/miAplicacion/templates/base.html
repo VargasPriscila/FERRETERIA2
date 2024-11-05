@@ -53,6 +53,8 @@
             height: 45px; /* Ajusta la altura según tus necesidades */
         }
 
+        
+
         .container-fluid {
             color: White;
 
@@ -73,6 +75,37 @@
             text-align: center;
             margin-top: auto; /* Pushes the footer to the bottom of the page */
         }
+
+
+        .filter-section {
+            position: sticky;
+            overflow-y: auto;
+            scrollbar-width: none; /* Firefox: oculta la barra de desplazamiento */
+            -ms-overflow-style: none;
+            top: 0;
+            height: 100vh; /* Asegura que ocupe toda la altura de la pantalla */
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .filter-content::-webkit-scrollbar {
+            overflow-y: scroll; /* Permite el desplazamiento */
+            scrollbar-width: none; /* Firefox: oculta la barra de desplazamiento */
+            -ms-overflow-style: none;
+            flex-grow: 1; /* Permite que el contenido ocupe el espacio restante */
+            padding-right: 10px; /* Opcional: espacio adicional para evitar que el scroll tape contenido */
+        }
+        
+        
+        
+        
+
+
+
+
+
+
+
     </style>
 
     {% block extra_styles %}{% endblock %}
