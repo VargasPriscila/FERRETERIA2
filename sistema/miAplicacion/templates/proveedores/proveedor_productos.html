@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block title %}Productos de {{ proveedor.nombre }}{% endblock %}
+{% block content %}
+<div class="container my-5">
+    <button type="button" onclick="window.location.href='{% url 'proveedor_list' %}'" class="btn btn-secondary">Atrás</button>
+    <h1 class="text-center">Productos de {{ proveedor.nombre }}</h1>
+    <table class="table table-striped table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Nombre</th>
+                <th>Descripción</th>
+                <th>Precio</th>
+                <th>Stock</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for producto in productos %}
+            <tr>
+                <td>{{ producto.nombre }}</td>
+                <td>{{ producto.descripcion }}</td>
+                <td>{{ producto.precio }}</td>
+                <td>{{ producto.cantidad_stock }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+

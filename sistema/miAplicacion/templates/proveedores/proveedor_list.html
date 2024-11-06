@@ -21,7 +21,7 @@
             </thead>
             <tbody>
                 {% for proveedor in proveedores %}
-                <tr>
+                <tr onclick="window.location='{% url 'proveedor_productos' proveedor.id %}'">
                     <td>{{ proveedor.id }}</td>
                     <td>{{ proveedor.nombre }}</td>
                     <td>{{ proveedor.tipo_producto }}</td>

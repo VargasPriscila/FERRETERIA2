@@ -42,6 +42,7 @@ urlpatterns = [
     path('proveedores/agregar/', views.proveedor_create, name='proveedor_create'),
     path('proveedores/editar/<int:pk>/', views.proveedor_update, name='proveedor_update'),
     path('proveedores/eliminar/<int:pk>/', views.proveedor_delete, name='proveedor_delete'),
+    path('proveedores/<int:proveedor_id>/', views.proveedor_productos, name='proveedor_productos'),
 
     # Productos
 # productos_list es una Class NO un def por eso esta diferente de las demas funciones que tiene Productos

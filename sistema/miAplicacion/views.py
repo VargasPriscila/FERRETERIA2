@@ -113,6 +113,12 @@ def proveedor_delete(request, pk):
         return redirect('proveedor_list')
     return render(request, 'proveedores/proveedor_confirm_delete.html', {'proveedor': proveedor})
 
+def proveedor_productos(request, proveedor_id):
+    proveedor = get_object_or_404(Proveedor, id=proveedor_id)
+    productos = proveedor.producto_set.all()  # Acceso a través de la relación ForeignKey
+    return render(request, 'proveedores/proveedor_productos.html', {'proveedor': proveedor, 'productos': productos})
+
+
 
 
 # ------------------------------ Categorías --------------------------------------------------
