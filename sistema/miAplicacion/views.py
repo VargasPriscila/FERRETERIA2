@@ -24,6 +24,9 @@ from django.db.models import Count
 from django.views.generic import ListView
 from django.db.models import Q
 from datetime import datetime
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
+
 
 
 
@@ -38,7 +41,7 @@ def index(request):
 
 
 # ------------------------------ Proveedores -------------------------------------------------
-
+@login_required #Agregar esta linea para asegurar que sea visible el template si el usuario se logueo.
 def proveedor_list(request):
     """
     Muestra una lista de todos los proveedores disponibles.
@@ -51,7 +54,7 @@ def proveedor_list(request):
     """
     proveedores = Proveedor.objects.all()
     return render(request, 'proveedores/proveedor_list.html', {'proveedores': proveedores})
-
+@login_required
 def proveedor_create(request):
     """
     Crea un nuevo proveedor. Si se envía una solicitud POST válida,
@@ -73,6 +76,7 @@ def proveedor_create(request):
         form = ProveedorForm()
     return render(request, 'proveedores/proveedor_form.html', {'form': form})
 
+@login_required
 def proveedor_update(request, pk):
     """
     Actualiza un proveedor existente basado en el identificador proporcionado.
@@ -95,6 +99,7 @@ def proveedor_update(request, pk):
         form = ProveedorForm(instance=proveedor)
     return render(request, 'proveedores/proveedor_form.html', {'form': form})
 
+@login_required
 def proveedor_delete(request, pk):
     """
     Elimina un proveedor existente basado en el identificador proporcionado.
@@ -113,6 +118,7 @@ def proveedor_delete(request, pk):
         return redirect('proveedor_list')
     return render(request, 'proveedores/proveedor_confirm_delete.html', {'proveedor': proveedor})
 
+@login_required
 def proveedor_productos(request, proveedor_id):
     proveedor = get_object_or_404(Proveedor, id=proveedor_id)
     productos = proveedor.producto_set.all()  # Acceso a través de la relación ForeignKey
@@ -122,7 +128,7 @@ def proveedor_productos(request, proveedor_id):
 
 
 # ------------------------------ Categorías --------------------------------------------------
-
+@login_required
 def categoria_list(request):
     """
     Muestra una lista de todas las categorías disponibles.
@@ -136,6 +142,7 @@ def categoria_list(request):
     categorias = Categoria.objects.all()
     return render(request, 'categorias/categoria_list.html', {'categorias': categorias})
 
+@login_required
 def categoria_create(request):
     """
     Crea una nueva categoría. Si se envía una solicitud POST válida, 
@@ -157,6 +164,7 @@ def categoria_create(request):
         form = CategoriaForm()
     return render(request, 'categorias/categoria_form.html', {'form': form})
 
+@login_required
 def categoria_update(request, pk):
     """
     Actualiza una categoría existente basada en el identificador proporcionado.
@@ -179,6 +187,7 @@ def categoria_update(request, pk):
         form = CategoriaForm(instance=categoria)
     return render(request, 'categorias/categoria_form.html', {'form': form})
 
+@login_required
 def categoria_delete(request, pk):
     """
     Elimina una categoría existente basada en el identificador proporcionado.
@@ -201,7 +210,7 @@ def categoria_delete(request, pk):
 
 
 # ------------------------------ Productos -------------------------------------------------
-
+@method_decorator(login_required, name='dispatch')
 class ProductosListView(ListView):
     model = Producto
     template_name = 'productos/productos_list.html'
@@ -241,7 +250,8 @@ class ProductosListView(ListView):
 
         return context
     
-    
+
+@login_required
 def productos_create(request):
     """
     Crea un nuevo producto. Si se envía una solicitud POST válida, 
@@ -263,6 +273,7 @@ def productos_create(request):
         form = ProductoForm()
     return render(request, 'productos/productos_form.html', {'form': form})
 
+@login_required
 def productos_update(request, pk):
     """
     Actualiza un producto existente basado en el identificador proporcionado.
@@ -285,6 +296,7 @@ def productos_update(request, pk):
         form = ProductoForm(instance=producto)
     return render(request, 'productos/productos_form.html', {'form': form})
 
+@login_required
 def productos_confirm_delete(request, pk):
     """
     Elimina un producto existente basado en el identificador proporcionado.
@@ -309,6 +321,7 @@ def productos_confirm_delete(request, pk):
 # ------------------------------ Ventas --------------------------------------------------
 
 # Vista para listar ventas
+@method_decorator(login_required, name='dispatch')
 class VentaListView(ListView):
     model = Venta
     template_name = 'ventas/venta_lista.html'  # Plantilla que se va a renderizar
@@ -340,6 +353,7 @@ class VentaListView(ListView):
         return context
 # Vista para agregar una venta
 @transaction.atomic
+@login_required
 def venta_agregar(request):
     """
     Crea una nueva venta, incluyendo el detalle de los productos seleccionados.
@@ -387,6 +401,7 @@ def venta_agregar(request):
     })
 
 # Vista para anular una venta
+@login_required
 def venta_anular(request, pk):
     venta = get_object_or_404(Venta, pk=pk)
     if request.method == 'POST':
@@ -402,6 +417,7 @@ def venta_anular(request, pk):
 
     return render(request, 'ventas/venta_anular.html', {'venta': venta})
 
+@login_required
 def detalle_venta(request, venta_id):
     venta = get_object_or_404(Venta, id=venta_id)
     detalles_venta = DetalleVenta.objects.filter(venta=venta)
@@ -424,12 +440,14 @@ def obtener_precio_producto(request, producto_id):
 
 # ------------------------------ Clientes --------------------------------------------------
 # Vista para listar clientes
+@login_required
 def cliente_lista(request):
     clientes = Cliente.objects.annotate(compras_recientes=Count('venta'))
     return render(request, 'clientes/cliente_lista.html', {'clientes': clientes})
 
 
 # Vista para agregar cliente
+@login_required
 def cliente_agregar(request):
     if request.method == 'POST':
         form = ClienteForm(request.POST)
@@ -441,6 +459,7 @@ def cliente_agregar(request):
     return render(request, 'clientes/cliente_form.html', {'form': form})
 
 # Vista para editar cliente
+@login_required
 def cliente_editar(request, pk):
     cliente = get_object_or_404(Cliente, pk=pk)
     if request.method == 'POST':
@@ -453,6 +472,7 @@ def cliente_editar(request, pk):
     return render(request, 'clientes/cliente_form.html', {'form': form})
 
 # Vista para eliminar cliente
+@login_required
 def cliente_eliminar(request, pk):
     cliente = get_object_or_404(Cliente, pk=pk)
     if request.method == 'POST':
@@ -466,6 +486,7 @@ def cliente_eliminar(request, pk):
 
 
 # ------------------------------ PAGINACIÓN DE LA LISTA DE COMPRAS --------------------------------------------------
+@method_decorator(login_required, name='dispatch')
 class clienteCompras(ListView):
     model = Venta
     template_name = 'clientes/cliente_compras.html'

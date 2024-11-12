@@ -112,17 +112,17 @@
 </head>
 <body>
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark fixed-top custom-navbar">
-                    <!-- cambie a fluid para que abarque toda la pantalla -->
-        <div class="container-fluid">
-            <a class="navbar-brand" href="{% url 'index' %}">
-                <i class="fas fa-tools"></i> Ferretería
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
+<nav class="navbar navbar-expand-lg navbar-dark fixed-top custom-navbar">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="{% url 'index' %}">
+            <i class="fas fa-tools"></i> Ferretería
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                {% if user.is_authenticated %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'categoria_list' %}">Categorías</a>
                     </li>
@@ -132,31 +132,36 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'productos_list' %}">Productos</a>
                     </li>
-                    <li class="nav-item"></li>
+                    <li class="nav-item">
                         <a class="nav-link" href="{% url 'venta_lista' %}">Ventas</a>
                     </li>
-                    <li class="nav-item"></li>
+                    <li class="nav-item">
                         <a class="nav-link" href="{% url 'cliente_lista' %}">Clientes</a>
                     </li>
-                </ul>
-                <form class="d-flex" method="GET" action="{% block search_url %}{% endblock %}">
-                    <input class="form-control me-2" type="search" name="q" placeholder="Buscar por {{ busqueda_placeholder }}" aria-label="Search">
-                    <button class="btn btn-outline-light" type="submit">Buscar</button>
-                </form>                
-                <ul class="nav navbar-nav ms-auto">
-                    {% if user.is_authenticated %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'logout' %}">{{ request.user }} | Logout</a>
-                        </li>
-                    {% else %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'login' %}">Login</a>
-                        </li>
-                    {% endif %}
-                </ul>
-            </div>
+                {% endif %}
+            </ul>
+            {% if user.is_authenticated %}
+            <form class="d-flex" method="GET" action="{% block search_url %}{% endblock %}">
+                <input class="form-control me-2" type="search" name="q" placeholder="Buscar por {{ busqueda_placeholder }}" aria-label="Search">
+                <button class="btn btn-outline-light" type="submit">Buscar</button>
+            </form>
+            {% endif %}
+
+            <ul class="nav navbar-nav ms-auto">
+                {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'logout' %}">{{ request.user }} | Logout</a>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'login' %}">Login</a>
+                    </li>
+                {% endif %}
+            </ul>
         </div>
-    </nav>
+    </div>
+</nav>
+
 
     <!-- Content Block -->
     <main class="container-fluid">
