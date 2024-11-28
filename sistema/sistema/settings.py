@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-4$e8hc=wxagj@t#x3boojmoc3i&*y@+yo3(l!p+jnzjlzvu#0p'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False #Si esta en True muestra las demas direcciones de los templates, para mayor seguridad dejarlo en False
+DEBUG = True #Si esta en True muestra las demas direcciones de los templates, para mayor seguridad dejarlo en False
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 

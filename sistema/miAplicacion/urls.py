@@ -54,8 +54,9 @@ urlpatterns = [
 
     # Ventas
     path('ventas/', VentaListView.as_view(), name='venta_lista'),
-    path('ventas/agregar/', views.venta_agregar, name='venta_agregar'),
+    #path('ventas/agregar/', views.venta_agregar, name='venta_agregar'),
     path('ventas/anular/<int:pk>/', views.venta_anular, name='venta_anular'),
+    path('ventas/agregar/', views.agregar_venta, name='venta_agregar'),
 
     # DetalleVenta
     path('ventas/<int:venta_id>/', views.detalle_venta, name='detalle_venta'),
@@ -72,7 +73,6 @@ urlpatterns = [
     
 
 
-
-    path('producto/precio/<int:producto_id>/', obtener_precio_producto, name='obtener_precio_producto'),
+    path('obtener_precio/', views.obtener_precio_producto, name='obtener_precio_producto'),
 
 ]

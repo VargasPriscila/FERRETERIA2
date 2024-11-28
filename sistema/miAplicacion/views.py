@@ -16,7 +16,7 @@ Las vistas son:
 # views.py
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Categoria, Proveedor, Producto, Venta, DetalleVenta, Cliente
-from .forms import (CategoriaForm, ProveedorForm, ProductoForm,VentaForm, DetalleVentaForm,ClienteForm)
+from .forms import (CategoriaForm, ProveedorForm, ProductoForm,VentaForm, DetalleVentaInlineFormSet,ClienteForm)
 from django.shortcuts import render
 from django.db import transaction
 from django.http import JsonResponse
@@ -26,6 +26,9 @@ from django.db.models import Q
 from datetime import datetime
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
+from django.forms import modelformset_factory
+from django.http import JsonResponse
+
 
 
 
@@ -352,52 +355,41 @@ class VentaListView(ListView):
         context['busqueda_placeholder'] = 'fecha(D-M-A),cliente,número de comprobante.'  # Placeholder
         return context
 # Vista para agregar una venta
-@transaction.atomic
 @login_required
-def venta_agregar(request):
-    """
-    Crea una nueva venta, incluyendo el detalle de los productos seleccionados.
-    
-    Args:
-        request: El objeto de solicitud HTTP.
-    
-    Returns:
-        Renderiza el formulario para crear una venta o redirige a la lista 
-        de ventas si el formulario es válido.
-    """
-    if request.method == 'POST':
-        venta_form = VentaForm(request.POST)
+@transaction.atomic
+def agregar_venta(request):
+    if request.method == "POST":
+        form_venta = VentaForm(request.POST)
+        formset_detalle = DetalleVentaInlineFormSet(request.POST, instance=form_venta.instance)
+        
+        if form_venta.is_valid() and formset_detalle.is_valid():
+            # Guardar la venta
+            venta = form_venta.save()
 
-        # Comprobamos si el formulario de venta es válido
-        if venta_form.is_valid():
-            venta = venta_form.save()  # Guardamos la venta principal
+            # Procesar los formularios del formset
+            for form in formset_detalle:
+                print(form.cleaned_data)
+                if form.cleaned_data.get('DELETE'):
+                    if form.instance.pk:  # Si la instancia ya existe en la base de datos
+                        form.instance.delete()  # Eliminar la instancia
+                else:
+                    detalle = form.save(commit=False)
+                    detalle.venta = venta
+                    detalle.importe = detalle.cantidad * detalle.precio_unitario
+                    detalle.save()
 
-            # Procesamos los productos seleccionados
-            productos_ids = request.POST.getlist('producto[]')
-            cantidades = request.POST.getlist('cantidad[]')
-
-            # Iteramos sobre los productos seleccionados
-            for producto_id, cantidad in zip(productos_ids, cantidades):
-                producto = get_object_or_404(Producto, id=producto_id)
-                cantidad = int(cantidad)
-
-                # Creamos el detalle de la venta con el precio congelado
-                DetalleVenta.objects.create(
-                    venta=venta,
-                    producto=producto,
-                    cantidad=cantidad,
-                    precio_unitario=producto.precio,  # Guardamos el precio actual del producto
-                )
-
-            # Redirigimos a la lista de ventas
-            return redirect('venta_lista')
-
+            return redirect('venta_lista')  # Redirige a la lista de ventas
     else:
-        venta_form = VentaForm()
+        form_venta = VentaForm()
+        formset_detalle = DetalleVentaInlineFormSet(instance=Venta())
+    
+    # Obtener lista de productos para cargar en el select
+    productos = Producto.objects.all()
 
     return render(request, 'ventas/venta_agregar.html', {
-        'venta_form': venta_form,
-        'productos': Producto.objects.all()
+        'form_venta': form_venta,
+        'formset_detalle': formset_detalle,
+        'productos': productos,
     })
 
 # Vista para anular una venta
@@ -431,12 +423,6 @@ def detalle_venta(request, venta_id):
         'hora_venta': hora_venta,  # Pasar la hora del primer detalle al contexto
     }
     return render(request, 'ventas/detalle_venta.html', context)
-
-def obtener_precio_producto(request, producto_id):
-    producto = get_object_or_404(Producto, id=producto_id)
-    return JsonResponse({'precio': str(producto.precio)})
-
-
 
 # ------------------------------ Clientes --------------------------------------------------
 # Vista para listar clientes
@@ -507,4 +493,11 @@ class clienteCompras(ListView):
         return context
 
 
-
+#----------------------------Endpoint para obtener el precio del Producto--------------------------------------------------------------------------------------------
+def obtener_precio_producto(request):
+    producto_id = request.GET.get('producto_id')
+    try:
+        producto = Producto.objects.get(id=producto_id)
+        return JsonResponse({'precio': producto.precio})
+    except Producto.DoesNotExist:
+        return JsonResponse({'error': 'Producto no encontrado'}, status=404)

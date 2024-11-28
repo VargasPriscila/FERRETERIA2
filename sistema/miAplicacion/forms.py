@@ -20,7 +20,8 @@ ferretería, asegurando la entrada de datos precisa y coherente en la aplicació
 # miAplicacion/forms.py
 from django import forms
 from .models import (Categoria, Proveedor, Producto, Venta, DetalleVenta,Cliente)
-
+from django.forms.models import inlineformset_factory
+from django.forms import ValidationError
 
 # ------------------------------ Categorías ------------------------------
 class CategoriaForm(forms.ModelForm):
@@ -98,7 +99,7 @@ class ProductoForm(forms.ModelForm):
 
 
 # ------------------------------ Ventas ------------------------------
-class VentaForm(forms.ModelForm):
+#class VentaForm(forms.ModelForm):
     """
     Formulario para el modelo `Venta`.
 
@@ -108,18 +109,18 @@ class VentaForm(forms.ModelForm):
 
     Utiliza selectores personalizados para los campos de cliente y medio de pago.
     """
-    class Meta:
-        model = Venta
-        fields = ['cliente', 'medio_de_pago']
-        widgets = {
-            'cliente': forms.Select(attrs={'class': 'form-control'}),
-            'medio_de_pago': forms.Select(attrs={'class': 'form-control'}),
-        }
+    #class Meta:
+        #model = Venta
+        #fields = ['cliente', 'medio_de_pago']
+        #widgets = {
+            #'cliente': forms.Select(attrs={'class': 'form-control'}),
+            #'medio_de_pago': forms.Select(attrs={'class': 'form-control'}),
+ #       }
 
 
 
 
-class DetalleVentaForm(forms.ModelForm):
+#class DetalleVentaForm(forms.ModelForm):
     """
     Formulario para el modelo `DetalleVenta`.
 
@@ -129,16 +130,16 @@ class DetalleVentaForm(forms.ModelForm):
 
     Incluye validación personalizada para asegurarse de que la cantidad sea positiva.
     """
-    class Meta:
-        model = DetalleVenta
-        fields = ['producto', 'cantidad']
-        widgets = {
-            'producto': forms.Select(attrs={'class': 'form-control'}),
-            'cantidad': forms.NumberInput(attrs={'class': 'form-control'}),
-        }
+    #class Meta:
+        #model = DetalleVenta
+        #fields = ['producto', 'cantidad']
+        #widgets = {
+ #           'producto': forms.Select(attrs={'class': 'form-control'}),
+  #          'cantidad': forms.NumberInput(attrs={'class': 'form-control'}),
+   #     }
 
-    def clean_cantidad(self):
-        """
+#   def clean_cantidad(self):
+"""
         Valida que la cantidad ingresada sea un número positivo.
 
         Retorna:
@@ -151,10 +152,10 @@ class DetalleVentaForm(forms.ModelForm):
         forms.ValidationError:
             Si la cantidad no es positiva.
         """
-        cantidad = self.cleaned_data.get('cantidad')
-        if cantidad is None or cantidad <= 0:
-            raise forms.ValidationError("La cantidad debe ser un número positivo.")
-        return cantidad
+        #cantidad = self.cleaned_data.get('cantidad')
+        #if cantidad is None or cantidad <= 0:
+            #raise forms.ValidationError("La cantidad debe ser un número positivo.")
+        #return cantidad
 
 
 # ------------------------------ Clientes ------------------------------
@@ -173,3 +174,62 @@ class ClienteForm(forms.ModelForm):
     class Meta:
         model = Cliente
         fields = ['nombre', 'apellido', 'documento', 'direccion', 'telefono', 'email']
+        
+        
+        
+        
+        
+class DetalleVentaForm(forms.ModelForm):
+    class Meta:
+        model = DetalleVenta
+        fields = ['producto', 'cantidad', 'precio_unitario', 'importe']
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Calcular precio e importe inicial si el producto está definido
+        if self.instance.producto:
+            self.fields['precio_unitario'].initial = self.instance.producto.precio
+            self.fields['importe'].initial = (
+                self.instance.cantidad * self.instance.producto.precio
+                if self.instance.cantidad else 0
+            )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        producto = cleaned_data.get('producto')  # Obtener el producto seleccionado
+        cantidad = cleaned_data.get('cantidad')
+        precio_unitario = cleaned_data.get('precio_unitario')
+
+        # Validar si el producto y la cantidad existen
+        if producto and cantidad:
+            # Verificar que la cantidad no exceda el stock disponible
+            if cantidad > producto.cantidad_stock:
+                self.add_error(
+                    'cantidad',
+                    f"La cantidad seleccionada ({cantidad}) excede el stock disponible ({producto.cantidad_stock}) para '{producto.nombre}'."
+                )
+
+        # Calcular el importe (si ambos campos tienen valor)
+        if cantidad and precio_unitario:
+            cleaned_data['importe'] = cantidad * precio_unitario
+
+        return cleaned_data
+
+
+# Crear el inline formset para DetalleVenta
+DetalleVentaInlineFormSet = inlineformset_factory(
+    Venta,  # Modelo padre
+    DetalleVenta,  # Modelo hijo
+    form=DetalleVentaForm,
+    fields=['producto', 'cantidad', 'precio_unitario', 'importe'],  # Campos a incluir en el form
+    extra=1,  # Número de formularios extra
+    can_delete=True  # Permitir eliminación de filas
+)
+
+class VentaForm(forms.ModelForm):
+    class Meta:
+        model = Venta
+        fields = ['cliente', 'medio_de_pago']
+
+
+
