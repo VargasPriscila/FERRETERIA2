@@ -1,10 +1,13 @@
 # urls.py
-from django.urls import path
+from django.urls import include, path
 from . import views
 from .views import obtener_precio_producto
 from .views import clienteCompras
 from .views import ProductosListView
 from .views import VentaListView
+from .views import panel_administracion
+from .views import enviar_consulta, responder_consulta, lista_consultas
+from .views import obtener_producto_por_codigo
 
 """
 Configuración de URLs para el proyecto.
@@ -30,7 +33,12 @@ Rutas:
 
 urlpatterns = [
     path('', views.index, name='index'),
-
+    
+    path('accounts/', include('allauth.urls')),
+    
+    #Administración
+    path('panel/', panel_administracion, name='panel_administracion'),    
+    
     # Categorías
     path('categorias/', views.categoria_list, name='categoria_list'),
     path('categorias/agrear/', views.categoria_create, name='categoria_create'),
@@ -69,10 +77,15 @@ urlpatterns = [
     path('clientes/compras/<int:pk>/', clienteCompras.as_view(), name='cliente_compras'),
 
     
-    
+    # Consultas
+    path('consultas/', lista_consultas, name='lista_consultas'),
+    path('consultas/enviar/', enviar_consulta, name='enviar_consulta'),
+    path('consultas/responder/<int:consulta_id>/', responder_consulta, name='responder_consulta'),
     
 
 
     path('obtener_precio/', views.obtener_precio_producto, name='obtener_precio_producto'),
 
+    #Codigo de barras
+    path('obtener_producto/', obtener_producto_por_codigo, name='obtener_producto'),
 ]

@@ -14,9 +14,10 @@ Las vistas son:
     - Clientes: CRUD de clientes.
 """
 # views.py
+from django.core.exceptions import PermissionDenied
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Categoria, Proveedor, Producto, Venta, DetalleVenta, Cliente
-from .forms import (CategoriaForm, ProveedorForm, ProductoForm,VentaForm, DetalleVentaInlineFormSet,ClienteForm)
+from .models import Categoria, Proveedor, Producto, Venta, DetalleVenta, Cliente, Consulta
+from .forms import (CategoriaForm, ProveedorForm, ProductoForm,VentaForm, DetalleVentaInlineFormSet,ClienteForm, ConsultaForm, RespuestaForm)
 from django.shortcuts import render
 from django.db import transaction
 from django.http import JsonResponse
@@ -28,6 +29,13 @@ from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.forms import modelformset_factory
 from django.http import JsonResponse
+from django.shortcuts import redirect
+from django.utils import timezone
+from django.core.mail import send_mail
+from django.conf import settings
+from django.contrib import messages
+
+
 
 
 
@@ -43,8 +51,30 @@ def index(request):
 
 
 
+
+def login_view(request):
+    if request.user.is_authenticated:
+        if request.user.is_staff:
+            return redirect('panel_administracion')  # Redirigir al panel de administración
+        else:
+            return redirect('productos_list')  # Redirigir a la lista de productos
+    # Lógica para manejar el formulario de inicio de sesión
+
+def admin_required(view_func):
+    """
+    Decorador para restringir el acceso a las vistas solo a administradores.
+    """
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_staff:  # Verificar si el usuario es administrador
+            raise PermissionDenied  # Denegar acceso si no es administrador
+        return view_func(request, *args, **kwargs)
+    return wrapper  
+    
+
 # ------------------------------ Proveedores -------------------------------------------------
+
 @login_required #Agregar esta linea para asegurar que sea visible el template si el usuario se logueo.
+@admin_required
 def proveedor_list(request):
     """
     Muestra una lista de todos los proveedores disponibles.
@@ -57,7 +87,9 @@ def proveedor_list(request):
     """
     proveedores = Proveedor.objects.all()
     return render(request, 'proveedores/proveedor_list.html', {'proveedores': proveedores})
+
 @login_required
+@admin_required
 def proveedor_create(request):
     """
     Crea un nuevo proveedor. Si se envía una solicitud POST válida,
@@ -80,6 +112,7 @@ def proveedor_create(request):
     return render(request, 'proveedores/proveedor_form.html', {'form': form})
 
 @login_required
+@admin_required
 def proveedor_update(request, pk):
     """
     Actualiza un proveedor existente basado en el identificador proporcionado.
@@ -102,7 +135,9 @@ def proveedor_update(request, pk):
         form = ProveedorForm(instance=proveedor)
     return render(request, 'proveedores/proveedor_form.html', {'form': form})
 
+
 @login_required
+@admin_required
 def proveedor_delete(request, pk):
     """
     Elimina un proveedor existente basado en el identificador proporcionado.
@@ -122,6 +157,7 @@ def proveedor_delete(request, pk):
     return render(request, 'proveedores/proveedor_confirm_delete.html', {'proveedor': proveedor})
 
 @login_required
+@admin_required
 def proveedor_productos(request, proveedor_id):
     proveedor = get_object_or_404(Proveedor, id=proveedor_id)
     productos = proveedor.producto_set.all()  # Acceso a través de la relación ForeignKey
@@ -131,7 +167,9 @@ def proveedor_productos(request, proveedor_id):
 
 
 # ------------------------------ Categorías --------------------------------------------------
+
 @login_required
+@admin_required
 def categoria_list(request):
     """
     Muestra una lista de todas las categorías disponibles.
@@ -146,6 +184,7 @@ def categoria_list(request):
     return render(request, 'categorias/categoria_list.html', {'categorias': categorias})
 
 @login_required
+@admin_required
 def categoria_create(request):
     """
     Crea una nueva categoría. Si se envía una solicitud POST válida, 
@@ -168,6 +207,7 @@ def categoria_create(request):
     return render(request, 'categorias/categoria_form.html', {'form': form})
 
 @login_required
+@admin_required
 def categoria_update(request, pk):
     """
     Actualiza una categoría existente basada en el identificador proporcionado.
@@ -191,6 +231,7 @@ def categoria_update(request, pk):
     return render(request, 'categorias/categoria_form.html', {'form': form})
 
 @login_required
+@admin_required
 def categoria_delete(request, pk):
     """
     Elimina una categoría existente basada en el identificador proporcionado.
@@ -213,6 +254,7 @@ def categoria_delete(request, pk):
 
 
 # ------------------------------ Productos -------------------------------------------------
+
 @method_decorator(login_required, name='dispatch')
 class ProductosListView(ListView):
     model = Producto
@@ -254,6 +296,7 @@ class ProductosListView(ListView):
         return context
     
 
+@admin_required
 @login_required
 def productos_create(request):
     """
@@ -276,6 +319,7 @@ def productos_create(request):
         form = ProductoForm()
     return render(request, 'productos/productos_form.html', {'form': form})
 
+@admin_required
 @login_required
 def productos_update(request, pk):
     """
@@ -299,6 +343,7 @@ def productos_update(request, pk):
         form = ProductoForm(instance=producto)
     return render(request, 'productos/productos_form.html', {'form': form})
 
+@admin_required
 @login_required
 def productos_confirm_delete(request, pk):
     """
@@ -324,7 +369,9 @@ def productos_confirm_delete(request, pk):
 # ------------------------------ Ventas --------------------------------------------------
 
 # Vista para listar ventas
+
 @method_decorator(login_required, name='dispatch')
+@method_decorator(admin_required, name='dispatch')
 class VentaListView(ListView):
     model = Venta
     template_name = 'ventas/venta_lista.html'  # Plantilla que se va a renderizar
@@ -355,6 +402,7 @@ class VentaListView(ListView):
         context['busqueda_placeholder'] = 'fecha(D-M-A),cliente,número de comprobante.'  # Placeholder
         return context
 # Vista para agregar una venta
+@admin_required
 @login_required
 @transaction.atomic
 def agregar_venta(request):
@@ -393,6 +441,7 @@ def agregar_venta(request):
     })
 
 # Vista para anular una venta
+@admin_required
 @login_required
 def venta_anular(request, pk):
     venta = get_object_or_404(Venta, pk=pk)
@@ -409,6 +458,7 @@ def venta_anular(request, pk):
 
     return render(request, 'ventas/venta_anular.html', {'venta': venta})
 
+@admin_required
 @login_required
 def detalle_venta(request, venta_id):
     venta = get_object_or_404(Venta, id=venta_id)
@@ -426,6 +476,7 @@ def detalle_venta(request, venta_id):
 
 # ------------------------------ Clientes --------------------------------------------------
 # Vista para listar clientes
+@admin_required
 @login_required
 def cliente_lista(request):
     clientes = Cliente.objects.annotate(compras_recientes=Count('venta'))
@@ -433,6 +484,7 @@ def cliente_lista(request):
 
 
 # Vista para agregar cliente
+@admin_required
 @login_required
 def cliente_agregar(request):
     if request.method == 'POST':
@@ -445,6 +497,7 @@ def cliente_agregar(request):
     return render(request, 'clientes/cliente_form.html', {'form': form})
 
 # Vista para editar cliente
+@admin_required
 @login_required
 def cliente_editar(request, pk):
     cliente = get_object_or_404(Cliente, pk=pk)
@@ -458,6 +511,7 @@ def cliente_editar(request, pk):
     return render(request, 'clientes/cliente_form.html', {'form': form})
 
 # Vista para eliminar cliente
+@admin_required
 @login_required
 def cliente_eliminar(request, pk):
     cliente = get_object_or_404(Cliente, pk=pk)
@@ -472,7 +526,9 @@ def cliente_eliminar(request, pk):
 
 
 # ------------------------------ PAGINACIÓN DE LA LISTA DE COMPRAS --------------------------------------------------
+
 @method_decorator(login_required, name='dispatch')
+@method_decorator(admin_required, name='dispatch')
 class clienteCompras(ListView):
     model = Venta
     template_name = 'clientes/cliente_compras.html'
@@ -501,3 +557,97 @@ def obtener_precio_producto(request):
         return JsonResponse({'precio': producto.precio})
     except Producto.DoesNotExist:
         return JsonResponse({'error': 'Producto no encontrado'}, status=404)
+    
+    
+    
+    
+    
+    
+# ------------------------------ Consulta de Clientes --------------------------------------------------  
+
+
+@login_required
+def enviar_consulta(request):
+    if request.method == 'POST':
+        form = ConsultaForm(request.POST)
+        if form.is_valid():
+            consulta = form.save(commit=False)
+            consulta.usuario = request.user.cliente  # Asocia la consulta con el cliente del usuario
+            consulta.save()
+            form.save_m2m()  # Guardar los productos seleccionados
+            messages.success(request, "Consulta enviada exitosamente.")
+            return redirect('enviar_consulta')  # Redirigir a la misma página
+        else:
+            messages.error(request, "Hubo un error al enviar la consulta. Inténtalo nuevamente.")
+    else:
+        form = ConsultaForm()
+    return render(request, 'consultas/enviar_consulta.html', {'form': form})
+
+# ------------------------------  Vista para Responder Consultas de Clientes --------------------------------------------------  
+@login_required
+def lista_consultas(request):
+    if request.user.is_staff:  # Verificar si el usuario es administrador
+        consultas = Consulta.objects.filter(respuesta__isnull=True)  # Mostrar solo consultas sin respuesta
+        return render(request, 'consultas/lista_consultas.html', {'consultas': consultas})
+    else:
+        return redirect('index')  # Redirigir a usuarios no administradores
+
+def enviar_respuesta_por_correo(consulta):
+    """
+    Envía un correo electrónico al usuario con la respuesta a su consulta.
+    """
+    subject = f"Respuesta a tu consulta sobre {', '.join([p.nombre for p in consulta.productos.all()])}"
+    message = f"Hola {consulta.usuario.user.username},\n\n" \
+            f"Gracias por contactarnos. Aquí está la respuesta a tu consulta:\n\n" \
+            f"{consulta.respuesta}\n\n" \
+            f"Saludos,\nEl equipo de Ferretería"
+    from_email = settings.EMAIL_HOST_USER
+    recipient_list = [consulta.usuario.user.email]
+
+    send_mail(subject, message, from_email, recipient_list)
+
+
+
+
+@login_required
+def responder_consulta(request, consulta_id):
+    consulta = get_object_or_404(Consulta, id=consulta_id)
+    if request.method == 'POST':
+        form = RespuestaForm(request.POST, instance=consulta)
+        if form.is_valid():
+            consulta = form.save(commit=False)
+            consulta.fecha_respuesta = timezone.now()
+            consulta.save()
+            enviar_respuesta_por_correo(consulta)  # Enviar la respuesta por correo
+            return redirect('lista_consultas')
+    else:
+        form = RespuestaForm(instance=consulta)
+    return render(request, 'consultas/responder_consulta.html', {'form': form, 'consulta': consulta})
+
+
+
+
+# ------------------------------  Vista para Administrador --------------------------------------------------  
+@admin_required
+def panel_administracion(request):
+    return render(request, 'admin/panel_administracion.html')
+
+
+
+# ------------------------------  Agregar Producto por código de barras --------------------------------------------------  
+
+def obtener_producto_por_codigo(request):
+    codigo_barras = request.GET.get('codigo_barras', None)
+    
+    if codigo_barras:
+        try:
+            producto = Producto.objects.get(codigo_barras=codigo_barras)
+            return JsonResponse({
+                'id': producto.id,
+                'nombre': producto.nombre,
+                'precio': float(producto.precio),
+            })
+        except Producto.DoesNotExist:
+            return JsonResponse({'error': 'Producto no encontrado'}, status=404)
+
+    return JsonResponse({'error': 'Código de barras no proporcionado'}, status=400)

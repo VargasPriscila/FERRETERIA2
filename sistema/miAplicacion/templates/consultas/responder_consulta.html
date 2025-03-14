@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <h2>Responder Consulta</h2>
+    <p><strong>Usuario:</strong> {{ consulta.usuario.user.username }}</p>
+    <p><strong>Productos:</strong>
+        {% for producto in consulta.productos.all %}
+            {{ producto.nombre }}{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+    </p>
+    <p><strong>Mensaje:</strong> {{ consulta.mensaje }}</p>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Enviar Respuesta</button>
+    </form>
+</div>
+{% endblock %}

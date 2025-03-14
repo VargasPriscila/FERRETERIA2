@@ -123,29 +123,40 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav me-auto">
                 {% if user.is_authenticated %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'categoria_list' %}">Categorías</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'proveedor_list' %}">Proveedores</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'productos_list' %}">Productos</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'venta_lista' %}">Ventas</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'cliente_lista' %}">Clientes</a>
-                    </li>
+                    {% if user.is_staff %}
+                        <!-- Enlaces para administradores -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'lista_consultas' %}">Consultas</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'categoria_list' %}">Categorías</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'proveedor_list' %}">Proveedores</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'productos_list' %}">Productos</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'venta_lista' %}">Ventas</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'cliente_lista' %}">Clientes</a>
+                        </li>
+                    {% else %}
+                        <!-- Enlaces para usuarios comunes -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'productos_list' %}">Productos</a>
+                        </li>
+                    {% endif %}
                 {% endif %}
             </ul>
-            {% if user.is_authenticated %}
-            <form class="d-flex" method="GET" action="{% block search_url %}{% endblock %}">
-                <input class="form-control me-2" type="search" name="q" placeholder="Buscar por {{ busqueda_placeholder }}" aria-label="Search">
-                <button class="btn btn-outline-light" type="submit">Buscar</button>
-            </form>
-            {% endif %}
+            {% if user.is_authenticated and request.path != '/Ferretería/' %}
+    <form class="d-flex" method="GET" action="{% block search_url %}{% endblock %}">
+        <input class="form-control me-2" type="search" name="q" placeholder="Buscar por {{ busqueda_placeholder }}" aria-label="Search">
+        <button class="btn btn-outline-light" type="submit">Buscar</button>
+    </form>
+{% endif %}
 
             <ul class="nav navbar-nav ms-auto">
                 {% if user.is_authenticated %}

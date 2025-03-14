@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <h2>Consultas Pendientes</h2>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Usuario</th>
+                <th>Productos</th>
+                <th>Mensaje</th>
+                <th>Fecha</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for consulta in consultas %}
+            <tr>
+                <td>{{ consulta.usuario.user.username }}</td>
+                <td>
+                    {% for producto in consulta.productos.all %}
+                        {{ producto.nombre }}{% if not forloop.last %}, {% endif %}
+                    {% endfor %}
+                </td>
+                <td>{{ consulta.mensaje }}</td>
+                <td>{{ consulta.fecha_consulta }}</td>
+                <td>
+                    <a href="{% url 'responder_consulta' consulta.id %}" class="btn btn-primary btn-sm">Responder</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">No hay consultas pendientes.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

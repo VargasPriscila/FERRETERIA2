@@ -6,11 +6,28 @@ A través de estos modelos, se puede realizar un seguimiento del inventario, reg
 Los modelos están diseñados para trabajar de manera interconectada, actualizando automáticamente la información relevante, como el stock de productos y el importe total de las ventas.
 
 """
+import uuid
 import random
 from django.db import models, transaction
 from django.db.models import Sum
 from django.utils import timezone
 from decimal import Decimal
+from django.contrib.auth.models import User
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+import barcode
+from barcode.writer import ImageWriter
+from io import BytesIO
+from django.core.files.base import ContentFile
+
+@receiver(post_save, sender=User)
+def crear_cliente(sender, instance, created, **kwargs):
+    if created:
+        Cliente.objects.create(user=instance)
+
+@receiver(post_save, sender=User)
+def guardar_cliente(sender, instance, **kwargs):
+    instance.cliente.save()
 
 
 class Cliente(models.Model):
@@ -32,6 +49,7 @@ class Cliente(models.Model):
     email : EmailField
         Correo electrónico del cliente.
     """
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True, default=None , related_name='cliente')
     nombre = models.CharField(max_length=50)
     apellido = models.CharField(max_length=100)
     documento = models.CharField(max_length=50)
@@ -215,24 +233,6 @@ class DetallePedido(models.Model):
 
 
 class Producto(models.Model):
-    """
-    Modelo que representa un producto en el sistema.
-
-    Atributos:
-    ----------
-    nombre : str
-        Nombre del producto.
-    descripcion : str
-        Descripción del producto.
-    precio : Decimal
-        Precio del producto.
-    cantidad_stock : int
-        Cantidad en stock del producto.
-    categoria : ForeignKey
-        Categoría a la que pertenece el producto.
-    proveedor : ForeignKey
-        Proveedor del producto (opcional).
-    """
     nombre = models.CharField(max_length=100)
     descripcion = models.TextField()
     precio = models.DecimalField(max_digits=10, decimal_places=2, default=0.000)
@@ -243,12 +243,39 @@ class Producto(models.Model):
     proveedor = models.ForeignKey('Proveedor', on_delete=models.SET_NULL, null=True, blank=True)
     imagen = models.ImageField(upload_to='productos/', default='productos/default.png', blank=True, null=True)
 
+    # Campo para almacenar el código de barras
+    codigo_barras = models.CharField(max_length=50, null=True, blank=True)
+
+    # Imagen del código de barras generado
+    imagen_codigo_barras = models.ImageField(upload_to='codigos_barras/', blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+        """
+        Sobreescribe el método save para generar un código de barras único
+        si no tiene uno asignado.
+        """
+        if not self.codigo_barras:
+            self.codigo_barras = str(uuid.uuid4().int)[:13]  # Genera un código único de 13 dígitos
+            self.generar_imagen_codigo_barras()  # Genera la imagen del código de barras
+
+        super().save(*args, **kwargs)
+
+    def generar_imagen_codigo_barras(self):
+        """
+        Genera la imagen del código de barras y la guarda en el campo imagen_codigo_barras.
+        """
+        if self.codigo_barras:
+            EAN = barcode.get_barcode_class('ean13')
+            ean = EAN(self.codigo_barras, writer=ImageWriter())
+
+            buffer = BytesIO()
+            ean.write(buffer)
+
+            filename = f"{self.codigo_barras}.png"
+            self.imagen_codigo_barras.save(filename, ContentFile(buffer.getvalue()), save=False)
 
     def __str__(self):
-        """
-        Devuelve una representación en cadena del producto.
-        """
-        return self.nombre
+        return f"{self.nombre} ({self.codigo_barras})"
 
 
 
@@ -387,6 +414,26 @@ class DetalleVenta(models.Model):
         # Actualizar el importe total de la venta
         if self.venta:
             self.venta.calcular_importe_total()
+            
+            
+            
+class Consulta(models.Model):
+    usuario = models.ForeignKey(Cliente, on_delete=models.CASCADE, related_name='consultas')
+    productos = models.ManyToManyField(Producto, related_name='consultas')
+    mensaje = models.TextField()
+    fecha_consulta = models.DateTimeField(auto_now_add=True)
+    respuesta = models.TextField(blank=True, null=True)
+    fecha_respuesta = models.DateTimeField(blank=True, null=True)
+
+    def __str__(self):
+        return f"Consulta de {self.usuario.email} - {self.fecha_consulta}"
+            
+            
+            
+            
+            
+            
+            
 
 
 

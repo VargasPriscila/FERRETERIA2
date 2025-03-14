@@ -19,9 +19,26 @@ ferretería, asegurando la entrada de datos precisa y coherente en la aplicació
 """
 # miAplicacion/forms.py
 from django import forms
-from .models import (Categoria, Proveedor, Producto, Venta, DetalleVenta,Cliente)
+from .models import (Categoria, Proveedor, Producto, Venta, DetalleVenta,Cliente, Producto,Consulta)
 from django.forms.models import inlineformset_factory
 from django.forms import ValidationError
+
+
+class ConsultaForm(forms.ModelForm):
+    productos = forms.ModelMultipleChoiceField(
+        queryset=Producto.objects.all(),
+        widget=forms.CheckboxSelectMultiple,
+        required=True
+    )
+
+    class Meta:
+        model = Consulta
+        fields = ['mensaje', 'productos']
+
+class RespuestaForm(forms.ModelForm):
+    class Meta:
+        model = Consulta
+        fields = ['respuesta']
 
 # ------------------------------ Categorías ------------------------------
 class CategoriaForm(forms.ModelForm):
@@ -88,7 +105,7 @@ class ProductoForm(forms.ModelForm):
     """
     class Meta:
         model = Producto
-        fields = ['nombre', 'imagen', 'descripcion', 'precio', 'cantidad_stock', 'categoria', 'proveedor']
+        fields = ['nombre', 'imagen', 'descripcion', 'precio', 'cantidad_stock', 'categoria', 'proveedor', 'codigo_barras']
         widgets = {
             'nombre': forms.TextInput(attrs={'class': 'form-control'}),
             'descripcion': forms.TextInput(attrs={'class': 'form-control'}),

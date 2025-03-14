@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <h2>Panel de Administración</h2>
+    <div class="list-group">
+        <a href="{% url 'categoria_list' %}" class="list-group-item list-group-item-action">Categorías</a>
+        <a href="{% url 'proveedor_list' %}" class="list-group-item list-group-item-action">Proveedores</a>
+        <a href="{% url 'productos_list' %}" class="list-group-item list-group-item-action">Productos</a>
+        <a href="{% url 'venta_lista' %}" class="list-group-item list-group-item-action">Ventas</a>
+        <a href="{% url 'cliente_lista' %}" class="list-group-item list-group-item-action">Clientes</a>
+    </div>
+</div>
+{% endblock %}

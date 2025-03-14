@@ -39,7 +39,10 @@
         <div class="col-md-9">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h2 class="mb-0">Productos</h2>
+                <a href="{% url 'enviar_consulta' %}" class="btn btn-primary">Consultar</a>
+                {% if user.is_staff %}
                 <a href="{% url 'productos_create' %}" class="btn btn-primary">Agregar Producto</a>
+                {% endif %}
             </div>
             <div class="row">
                 {% if productos %}
@@ -56,8 +59,10 @@
                                     Categoría: {{ producto.categoria }}
                                 </p>
                                 <div class="d-flex justify-content-between">
+                                    {% if user.is_staff %}
                                     <a href="{% url 'productos_update' producto.pk %}" class="btn btn-warning btn-sm">Editar</a>
                                     <a href="{% url 'productos_confirm_delete' producto.pk %}" class="btn btn-danger btn-sm">Eliminar</a>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
