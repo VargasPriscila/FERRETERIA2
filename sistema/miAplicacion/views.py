@@ -34,6 +34,9 @@ from django.utils import timezone
 from django.core.mail import send_mail
 from django.conf import settings
 from django.contrib import messages
+from django.core.mail import EmailMessage
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
 
 
 
@@ -568,21 +571,38 @@ def obtener_precio_producto(request):
 
 @login_required
 def enviar_consulta(request):
+    productos_seleccionados = []  # Inicializamos una lista vacía
     if request.method == 'POST':
+        productos_seleccionados_ids = request.POST.getlist('productos')
+        productos_seleccionados = Producto.objects.filter(id__in=productos_seleccionados_ids)
+
         form = ConsultaForm(request.POST)
         if form.is_valid():
             consulta = form.save(commit=False)
-            consulta.usuario = request.user.cliente  # Asocia la consulta con el cliente del usuario
+            consulta.usuario = request.user.cliente
             consulta.save()
-            form.save_m2m()  # Guardar los productos seleccionados
+            consulta.productos.set(productos_seleccionados)
+
+            # Enviar correo al administrador
+            subject = f"Nueva consulta de {consulta.usuario.user.username}"
+            message = f"Has recibido una nueva consulta:\n\n" \
+                f"Usuario: {consulta.usuario.user.username}\n" \
+                f"Productos: {', '.join([p.nombre for p in productos_seleccionados])}\n" \
+                f"Mensaje: {consulta.mensaje}\n\n" \
+                f"Puedes responderla desde el panel de administración."
+            from_email = settings.EMAIL_HOST_USER
+            recipient_list = [settings.EMAIL_HOST_USER]
+
+            send_mail(subject, message, from_email, recipient_list)
+
             messages.success(request, "Consulta enviada exitosamente.")
-            return redirect('enviar_consulta')  # Redirigir a la misma página
+            return redirect('productos_list')
         else:
-            messages.error(request, "Hubo un error al enviar la consulta. Inténtalo nuevamente.")
+            messages.error(request, "Hubo un error al enviar la consulta.")
     else:
         form = ConsultaForm()
-    return render(request, 'consultas/enviar_consulta.html', {'form': form})
 
+    return render(request, 'consultas/enviar_consulta.html', {'form': form, 'productos_seleccionados': productos_seleccionados})
 # ------------------------------  Vista para Responder Consultas de Clientes --------------------------------------------------  
 @login_required
 def lista_consultas(request):
@@ -598,14 +618,21 @@ def enviar_respuesta_por_correo(consulta):
     """
     subject = f"Respuesta a tu consulta sobre {', '.join([p.nombre for p in consulta.productos.all()])}"
     message = f"Hola {consulta.usuario.user.username},\n\n" \
-            f"Gracias por contactarnos. Aquí está la respuesta a tu consulta:\n\n" \
-            f"{consulta.respuesta}\n\n" \
-            f"Saludos,\nEl equipo de Ferretería"
+        f"Gracias por contactarnos. Aquí está la respuesta a tu consulta:\n\n" \
+        f"{consulta.respuesta}\n\n" \
+        f"Saludos,\nEl equipo de Ferretería&BuloneríaSuárez"
     from_email = settings.EMAIL_HOST_USER
     recipient_list = [consulta.usuario.user.email]
 
-    send_mail(subject, message, from_email, recipient_list)
-
+    # Crear el objeto EmailMessage
+    email = EmailMessage(
+        subject,
+        message,
+        from_email,
+        recipient_list,
+        reply_to=[from_email],  # Configura el Reply-To
+    )
+    email.send()
 
 
 
@@ -618,12 +645,30 @@ def responder_consulta(request, consulta_id):
             consulta = form.save(commit=False)
             consulta.fecha_respuesta = timezone.now()
             consulta.save()
-            enviar_respuesta_por_correo(consulta)  # Enviar la respuesta por correo
+
+            # Enviar correo al usuario con la respuesta
+            subject = f"Respuesta a tu consulta sobre {', '.join([p.nombre for p in consulta.productos.all()])}"
+            html_message = render_to_string('emails/respuesta_usuario.html', {
+                'consulta': consulta,
+                'productos': consulta.productos.all(),
+            })
+            plain_message = strip_tags(html_message)
+            from_email = settings.EMAIL_HOST_USER
+            recipient_list = [consulta.usuario.user.email]
+
+            email = EmailMessage(
+                subject,
+                plain_message,
+                from_email,
+                recipient_list,
+            )
+            email.content_subtype = "html"
+            email.send()
+
             return redirect('lista_consultas')
     else:
         form = RespuestaForm(instance=consulta)
     return render(request, 'consultas/responder_consulta.html', {'form': form, 'consulta': consulta})
-
 
 
 
@@ -651,3 +696,45 @@ def obtener_producto_por_codigo(request):
             return JsonResponse({'error': 'Producto no encontrado'}, status=404)
 
     return JsonResponse({'error': 'Código de barras no proporcionado'}, status=400)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#inicio para administradoressssssss
+
+def admin_login(request):
+    if request.method == 'POST':
+        username = request.POST['username']
+        password = request.POST['password']
+        user = authenticate(request, username=username, password=password)
+        if user is not None and user.is_staff:  # Verifica si el usuario es staff (administrador)
+            login(request, user)
+            return redirect('panel_administracion')  # Redirige al panel de administración
+        else:
+            # Mensaje de error si las credenciales son incorrectas
+            return render(request, 'admin_login.html', {'error': 'Credenciales inválidas o no eres administrador.'})
+    return render(request, 'admin_login.html')

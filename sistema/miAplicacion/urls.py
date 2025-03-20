@@ -8,7 +8,7 @@ from .views import VentaListView
 from .views import panel_administracion
 from .views import enviar_consulta, responder_consulta, lista_consultas
 from .views import obtener_producto_por_codigo
-
+from .views import admin_login
 """
 Configuración de URLs para el proyecto.
 
@@ -34,10 +34,11 @@ Rutas:
 urlpatterns = [
     path('', views.index, name='index'),
     
-    path('accounts/', include('allauth.urls')),
+    path('account/', include('allauth.urls')),
     
     #Administración
-    path('panel/', panel_administracion, name='panel_administracion'),    
+    path('panel/', panel_administracion, name='panel_administracion'), 
+    path('admin/login/', admin_login, name='admin_login'),
     
     # Categorías
     path('categorias/', views.categoria_list, name='categoria_list'),

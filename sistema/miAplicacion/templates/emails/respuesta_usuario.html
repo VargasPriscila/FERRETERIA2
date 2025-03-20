@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Respuesta a tu Consulta</title>
+</head>
+<body>
+    <h2>Respuesta a tu consulta</h2>
+    <p><strong>Mensaje:</strong> {{ consulta.respuesta }}</p>
+    <h3>Productos Seleccionados:</h3>
+    <div>
+        {% for producto in productos %}
+        <div style="margin-bottom: 20px;">
+            <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}" style="max-width: 200px;">
+            <p><strong>Nombre:</strong> {{ producto.nombre }}</p>
+            <p><strong>Precio:</strong> S/ {{ producto.precio }}</p>
+            <p><strong>Stock:</strong> {{ producto.cantidad_stock }}</p>
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>

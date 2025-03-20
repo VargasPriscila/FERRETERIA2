@@ -1,14 +1,36 @@
 {% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Responder Consulta{% endblock %}
+
 {% block content %}
 <div class="container mt-5">
     <h2>Responder Consulta</h2>
     <p><strong>Usuario:</strong> {{ consulta.usuario.user.username }}</p>
-    <p><strong>Productos:</strong>
-        {% for producto in consulta.productos.all %}
-            {{ producto.nombre }}{% if not forloop.last %}, {% endif %}
-        {% endfor %}
-    </p>
     <p><strong>Mensaje:</strong> {{ consulta.mensaje }}</p>
+
+    <!-- Productos consultados -->
+    <div class="row mt-4">
+        <h4>Productos consultados:</h4>
+        {% for producto in consulta.productos.all %}
+        <div class="col-md-4 mb-4">
+            <div class="card product-card">
+                <h5 class="card-title text-center">{{ producto.nombre }}</h5>
+                <img src="{% if producto.imagen %}{{ producto.imagen.url }}{% else %}{% static 'productos/default.png' %}{% endif %}" class="card-img-top product-img" alt="{{ producto.nombre }}">
+                <div class="card-body text-center">
+                    <p class="card-text">
+                        $ {{ producto.precio }}<br>
+                        Stock: {{ producto.cantidad_stock }}<br>
+                        Proveedor: {{ producto.proveedor }}<br>
+                        Categoría: {{ producto.categoria }}
+                    </p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Formulario de respuesta -->
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}

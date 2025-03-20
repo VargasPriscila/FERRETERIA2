@@ -1,4 +1,5 @@
 {% load static %}
+{% load custom_filters %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -22,9 +23,6 @@
             padding: 0;
             height: 100%;
         }
-
-
-
 
         body {
             font-family: 'Roboto', sans-serif;
@@ -53,13 +51,8 @@
             height: 45px; /* Ajusta la altura según tus necesidades */
         }
 
-        
-
         .container-fluid {
             color: White;
-
-
-
         }
         main.container-fluid {
             background-image: linear-gradient(to bottom, #343A40 30%, red 100%);
@@ -75,7 +68,6 @@
             text-align: center;
             margin-top: auto; /* Pushes the footer to the bottom of the page */
         }
-
 
         .filter-section {
             position: sticky;
@@ -95,84 +87,73 @@
             flex-grow: 1; /* Permite que el contenido ocupe el espacio restante */
             padding-right: 10px; /* Opcional: espacio adicional para evitar que el scroll tape contenido */
         }
-        
-        
-        
-        
-
-
-
-
-
-
-
     </style>
 
     {% block extra_styles %}{% endblock %}
 </head>
 <body>
     <!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-dark fixed-top custom-navbar">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="{% url 'index' %}">
-            <i class="fas fa-tools"></i> Ferretería
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav me-auto">
-                {% if user.is_authenticated %}
-                    {% if user.is_staff %}
-                        <!-- Enlaces para administradores -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top custom-navbar">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'index' %}">
+                <i class="fas fa-tools"></i> Ferretería
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    {% if user.is_authenticated %}
+                        {% if user.is_staff %}
+                            <!-- Enlaces para administradores -->
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'lista_consultas' %}">Consultas</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'categoria_list' %}">Categorías</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'proveedor_list' %}">Proveedores</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'productos_list' %}">Productos</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'venta_lista' %}">Ventas</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'cliente_lista' %}">Clientes</a>
+                            </li>
+                        {% else %}
+                            <!-- Enlaces para usuarios comunes -->
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'productos_list' %}">Productos</a>
+                            </li>
+                        {% endif %}
+                    {% endif %}
+                </ul>
+                {% with excluded_paths="/Ferretería/,/consultas/enviar/,/consultas/responder/" %}
+                    {% if user.is_authenticated and request.path not in excluded_paths and not request.path|startswith:'/consultas/responder/' and not hide_search_bar %}
+                        <form class="d-flex" method="GET" action="{% block search_url %}{% endblock %}">
+                            <input class="form-control me-2" type="search" name="q" placeholder="Buscar por {{ busqueda_placeholder }}" aria-label="Search">
+                            <button class="btn btn-outline-light" type="submit">Buscar</button>
+                        </form>
+                    {% endif %}
+                {% endwith %}
+                <ul class="nav navbar-nav ms-auto">
+                    {% if user.is_authenticated %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'lista_consultas' %}">Consultas</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'categoria_list' %}">Categorías</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'proveedor_list' %}">Proveedores</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'productos_list' %}">Productos</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'venta_lista' %}">Ventas</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'cliente_lista' %}">Clientes</a>
+                            <a class="nav-link" href="{% url 'account_logout' %}">{{ request.user }} | Logout</a>
                         </li>
                     {% else %}
-                        <!-- Enlaces para usuarios comunes -->
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'productos_list' %}">Productos</a>
+                            <a class="nav-link" href="{% url 'account_login' %}">Login</a>
                         </li>
                     {% endif %}
-                {% endif %}
-            </ul>
-            {% if user.is_authenticated and request.path != '/Ferretería/' %}
-    <form class="d-flex" method="GET" action="{% block search_url %}{% endblock %}">
-        <input class="form-control me-2" type="search" name="q" placeholder="Buscar por {{ busqueda_placeholder }}" aria-label="Search">
-        <button class="btn btn-outline-light" type="submit">Buscar</button>
-    </form>
-{% endif %}
-
-            <ul class="nav navbar-nav ms-auto">
-                {% if user.is_authenticated %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'logout' %}">{{ request.user }} | Logout</a>
-                    </li>
-                {% else %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'login' %}">Login</a>
-                    </li>
-                {% endif %}
-            </ul>
+                </ul>
+            </div>
         </div>
-    </div>
-</nav>
-
+    </nav>
 
     <!-- Content Block -->
     <main class="container-fluid">
@@ -188,10 +169,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     {% block extra_scripts %}{% endblock %}
 </body>
-
-
 </html>
-
 
 <!--
 """

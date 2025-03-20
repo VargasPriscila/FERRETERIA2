@@ -1,62 +1,63 @@
 {% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Consulta de Productos{% endblock %}
+
+{% block hide_search_bar %}True{% endblock %}
 
 {% block content %}
 <div class="container mt-5">
     <h2>Enviar Consulta</h2>
-    <form method="post">
+
+    <!-- Formulario de consulta -->
+    <form method="post" class="position-relative">
         {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-primary">Enviar</button>
+
+        <!-- Botón Enviar fijo en la esquina superior derecha -->
+        <button type="submit" class="btn btn-primary fixed-top-right">Enviar</button>
+        
+        <!-- Área de texto al inicio -->
+        <div class="mb-3">
+            <label for="{{ form.mensaje.id_for_label }}" class="form-label">Mensaje:</label>
+            {{ form.mensaje }}
+        </div>
+
+        <!-- Productos seleccionados -->
+        <div class="row mt-4">
+            {% if productos_seleccionados %}
+                {% for producto in productos_seleccionados %}
+                <div class="col-md-4 mb-4">
+                    <div class="card product-card">
+                        <h5 class="card-title text-center">{{ producto.nombre }}</h5>
+                        <img src="{% if producto.imagen %}{{ producto.imagen.url }}{% else %}{% static 'productos/default.png' %}{% endif %}" class="card-img-top product-img" alt="{{ producto.nombre }}">
+                        <div class="card-body text-center">
+                            <p class="card-text">
+                                $ {{ producto.precio }}<br>
+                                Stock: {{ producto.cantidad_stock }}<br>
+                                Proveedor: {{ producto.proveedor }}<br>
+                                Categoría: {{ producto.categoria }}
+                            </p>
+                            <!-- Campo oculto para enviar el ID del producto -->
+                            <input type="hidden" name="productos" value="{{ producto.id }}">
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-center">No seleccionaste ningún producto.</p>
+            {% endif %}
+        </div>
     </form>
 </div>
 
-<!-- Mensaje de éxito o error -->
-{% if messages %}
-    <div id="message-container">
-        {% for message in messages %}
-            <div class="alert {% if message.tags == 'success' %}alert-success{% else %}alert-danger{% endif %}">
-                {{ message }}
-            </div>
-        {% endfor %}
-    </div>
-{% endif %}
-
+<!-- Estilos CSS para fijar el botón en la esquina superior derecha -->
 <style>
-    #message-container {
+    .fixed-top-right {
         position: fixed;
-        top: 50%;  /* Centrar verticalmente */
-        left: 50%; /* Centrar horizontalmente */
-        transform: translate(-50%, -50%); /* Ajustar el centro exacto */
-        z-index: 9999;
-        text-align: center; /* Centrar el texto */
-    }
-
-    .alert {
-        padding: 15px 30px;
-        font-size: 16px;
-        font-weight: bold;
-        border-radius: 10px;
-        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
-        margin-bottom: 10px;
-        animation: fadeInOut 5s ease-in-out;
-    }
-
-    @keyframes fadeInOut {
-        0% { opacity: 0; }
-        10% { opacity: 1; }
-        90% { opacity: 1; }
-        100% { opacity: 0; }
+        top: 50px;
+        right: 20px;
+        z-index: 1000; /* Asegura que el botón esté por encima de otros elementos */
     }
 </style>
 
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        var messages = document.querySelectorAll('.alert');
-        messages.forEach(function (message) {
-            setTimeout(function () {
-                message.style.display = "none"; // Ocultar mensaje después de 5 segundos
-            }, 5000);
-        });
-    });
-</script>
 {% endblock %}

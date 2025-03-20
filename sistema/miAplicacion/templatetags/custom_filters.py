@@ -8,3 +8,8 @@ def multiply(value, arg):
         return float(value) * float(arg)
     except (ValueError, TypeError):
         return None
+
+
+@register.filter
+def startswith(value, prefix):
+    return value.startswith(prefix)
