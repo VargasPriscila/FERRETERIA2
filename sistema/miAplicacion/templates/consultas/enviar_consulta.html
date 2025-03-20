@@ -1,6 +1,5 @@
 {% extends 'base.html' %}
 {% load static %}
-
 {% block title %}Consulta de Productos{% endblock %}
 
 {% block hide_search_bar %}True{% endblock %}
@@ -58,6 +57,32 @@
         right: 20px;
         z-index: 1000; /* Asegura que el botón esté por encima de otros elementos */
     }
+    .product-card {
+        box-shadow: 0 4px 8px rgba(255, 255, 255, 0.1);
+        border: none;
+        max-width: 250px;
+        background-color: white;
+        padding: 3px;
+        
+    }
+
+    .product-card .card-title {
+        font-size: 1.2rem;
+        color: #100;
+        font-weight: bold;
+    }
+
+    .product-card .card-text {
+        font-size: 0.9rem;
+        color: #000;
+        font-weight: bold; /* Texto más grueso */
+    }
+
+    .product-img {
+        max-height: 100px;
+        object-fit: contain;
+    }
+
 </style>
 
 {% endblock %}

@@ -1,0 +1,41 @@
+.card {
+    border: 1px solid #000000;
+    border-radius: 5px;
+    overflow: hidden;
+    padding: 0; /* Elimina el padding de la tarjeta */
+    box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.2); /* Sombra añadida */
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Transiciones suaves para zoom y sombra */
+}
+
+.card:hover {
+    transform: scale(1.05); /* Zoom al 105% */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5); /* Sombra más intensa al hacer hover */
+}
+
+
+
+.card img {
+    border-radius: 0px;
+    object-fit: contain; /* Ajusta la imagen para que cubra todo el espacio disponible */
+    width: 100%;       /* Asegura que la imagen ocupe todo el ancho */
+    height: auto;      /* Mantiene la proporción de la imagen */
+    margin: 0;         /* Elimina cualquier margen alrededor de la imagen */
+    padding: 0;        /* Elimina cualquier padding */
+}
+
+.card-body {
+    color: #ffffff;
+    background-color: #343a40;
+    padding: 5px;
+}
+
+.card-title {
+    color: rgb(255, 255, 255);
+    background-color: #3b454e;
+    text-align: center;
+    margin: 0%;
+    padding: 0px;                  /* Añadir algo de espacio entre el título y los bordes */
+    font-size: 1.2em;
+    font-weight: bold;
+}
+

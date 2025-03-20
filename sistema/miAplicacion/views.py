@@ -43,16 +43,30 @@ from django.utils.html import strip_tags
 
 
 
-
-
+def admin_login(request):
+    if request.method == 'POST':
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                login(request, user)
+                if user.is_staff:
+                    return redirect('panel_administracion')  # Redirige a la página de administración
+                else:
+                    return redirect('productos_list')  # Redirige a la página de productos para usuarios no administradores
+            else:
+                form.add_error(None, 'Nombre de usuario o contraseña incorrectos')
+    else:
+        form = AuthenticationForm()
+    return render(request, 'account/login.html', {'form': form})
 
 def index(request):
-    """
-    Renderiza la página principal del sitio.
-    """
-    return render(request, "index.html")
-
-
+    productos = Producto.objects.all().order_by('nombre')
+    productos_grupos = [productos[i:i + 6] for i in range(0, len(productos), 6)]  # Agrupar en grupos de 3
+    context = {'productos_grupos': productos_grupos}
+    return render(request, 'index.html', context)
 
 
 def login_view(request):

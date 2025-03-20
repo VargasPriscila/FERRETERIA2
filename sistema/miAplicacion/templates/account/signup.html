@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+{% load static %}
+{% load socialaccount %}
+<html>
+<head>
+    <title>Registro</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 110vh;
+            margin: 0;
+            background-image: linear-gradient(to bottom, #343A40 10%, rgb(248, 24, 47) 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .login-container {
+            background-image: linear-gradient(to bottom, #343A40 20%, #dc3545 100%);
+            background-attachment: fixed;
+            background-size: contain;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            color: white;
+            max-width: 500px;
+            width: 50%;
+        }
+        .logo {
+            max-width: 150px;
+            margin-bottom: 10px;
+            background-color: white;
+            border-radius: 50%;
+            padding: 5px;
+        }
+        .login-container h2 {
+            margin-bottom: 25px;
+            font-size: 2rem;
+            font-weight: 600;
+        }
+        .login-container input[type="text"],
+        .login-container input[type="password"],
+        .login-container input[type="email"] {
+            width: calc(100% - 22px);
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 1rem;
+            color: #333;
+        }
+        .login-container input[type="text"]:focus,
+        .login-container input[type="password"]:focus,
+        .login-container input[type="email"]:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        }
+        .login-container button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+            width: calc(100% - 2px);
+        }
+        .login-container button:hover {
+            background-color: #0056b3;
+        }
+        .login-container a {
+            display: block;
+            margin-top: 15px;
+            color: #87ceeb;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        .login-container a:hover {
+            color: rgb(224, 224, 224);
+        }
+        .google-login {
+            display: block;
+            margin-top: 20px;
+            background-color: rgb(245, 3, 27);
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+        .google-login:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <img src="{% static 'img/icono.jpg' %}" alt="Logo de la Ferretería" class="logo">
+        <h2>Registro</h2>
+        <div>
+            <form method="POST" action="{% url 'account_signup' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <input type="email" name="email" class="form-control" placeholder="Correo electrónico" required>
+                </div>
+                <div class="form-group">
+                    <input type="text" name="username" class="form-control" placeholder="Usuario" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" name="password" class="form-control" placeholder="Contraseña" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" name="password2" class="form-control" placeholder="Confirmar contraseña" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Registrarse</button>
+            </form>
+            <div class="text-center mt-3">
+                <p>¿Ya tienes una cuenta? <a href="{% url 'admin_login' %}">Iniciar sesión</a>.</p>
+            </div>
+            <a href="{% provider_login_url 'google' %}" class="google-login">Registrarse con Google</a>
+        </div>
+    </div>
+</body>
+</html>

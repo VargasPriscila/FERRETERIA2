@@ -1,6 +1,12 @@
 {% extends 'base.html' %}
-{% block title %}Anular Venta{% endblock %}
 {% block content %}
+<head>
+  <style>
+      h2 {
+          margin: 40px; /* O padding: 10px; según prefieras */
+      }
+  </style>
+</head>
 <div class="container mt-4">
     <h2>Anular Venta</h2>
     <p>¿Estás seguro de que deseas anular la venta con el comprobante <strong>{{ venta.numero_comprobante }}</strong>?</p>

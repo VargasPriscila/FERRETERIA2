@@ -4,13 +4,60 @@
 {% block title %}Responder Consulta{% endblock %}
 
 {% block content %}
+<style>
+        .product-card {
+            box-shadow: 0 4px 8px rgba(255, 255, 255, 0.1);
+            border: none;
+            max-width: 250px;
+            background-color: white;
+            padding: 3px;
+            
+        }
+
+        .product-card .card-title {
+            font-size: 1.2rem;
+            color: #100;
+            font-weight: bold;
+        }
+
+        .product-card .card-text {
+            font-size: 0.9rem;
+            color: #000;
+            font-weight: bold; /* Texto más grueso */
+        }
+
+        .product-img {
+            max-height: 100px;
+            object-fit: contain;
+        }
+
+        .consulta-info {
+            border: none;
+            padding: 20px;
+            margin-bottom: 20px;
+
+        }
+
+        form {
+            margin-top: 0.6px;
+        }
+        .row.mt-4 { 
+            padding-right: 3px; 
+            padding-left: 3px; 
+        }
+        .textarea.form-control {
+            max-height: 50px; /* Ajusta este valor según sea necesario */
+        }
+        
+</style>
 <div class="container mt-5">
     <h2>Responder Consulta</h2>
+    <div class="consulta-info">
     <p><strong>Usuario:</strong> {{ consulta.usuario.user.username }}</p>
     <p><strong>Mensaje:</strong> {{ consulta.mensaje }}</p>
-
+    </div>
     <!-- Productos consultados -->
-    <div class="row mt-4">
+    <div class="row mt-4 gx-0">
         <h4>Productos consultados:</h4>
         {% for producto in consulta.productos.all %}
         <div class="col-md-4 mb-4">

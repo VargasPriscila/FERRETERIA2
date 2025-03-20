@@ -9,33 +9,15 @@ from .views import panel_administracion
 from .views import enviar_consulta, responder_consulta, lista_consultas
 from .views import obtener_producto_por_codigo
 from .views import admin_login
-"""
-Configuración de URLs para el proyecto.
-
-Este módulo define los patrones de URL para las diferentes vistas en la aplicación,
-incluyendo la gestión de categorías, proveedores, productos, ventas y clientes,
-así como la obtención de precios de productos. Las URLs mapean a vistas que
-manejan las respectivas funcionalidades, como listar, crear, actualizar o eliminar objetos.
-
-Vistas:
-    - `views.index`: Maneja el renderizado de la página principal.
-    - `views.categoria_list`, `views.categoria_create`, `views.categoria_update`, `views.categoria_delete`: Operaciones CRUD para Categorías.
-    - `views.proveedor_list`, `views.proveedor_create`, `views.proveedor_update`, `views.proveedor_delete`: Operaciones CRUD para Proveedores.
-    - `views.productos_list`, `views.productos_create`, `views.productos_update`, `views.productos_delete`: Operaciones CRUD para Productos.
-    - `views.venta_lista`, `views.venta_agregar`, `views.venta_anular`: Gestión de Ventas.
-    - `views.detalle_venta`: Muestra los detalles de una venta específica.
-    - `views.cliente_lista`, `views.cliente_agregar`, `views.cliente_editar`, `views.cliente_eliminar`: Operaciones CRUD para Clientes.
-    - `views.obtener_precio_producto`: Recupera el precio de un producto específico.
-
-Rutas:
-    - `path`: Define el patrón de URL y lo asocia a una función de vista correspondiente.
-"""
+from django.contrib.auth import views as auth_views
+from allauth.account.views import signup as allauth_signup
 
 urlpatterns = [
+    
     path('', views.index, name='index'),
     
     path('account/', include('allauth.urls')),
-    
+
     #Administración
     path('panel/', panel_administracion, name='panel_administracion'), 
     path('admin/login/', admin_login, name='admin_login'),

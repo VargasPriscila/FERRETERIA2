@@ -1,51 +1,146 @@
 {% extends 'base.html' %}
-{% load static %}
-
-{% block title %}Ferretería{% endblock %}
-
-
-
-{% block extra_styles %}
+{% load static %}  {% block extra_styles %}
 <style>
+    body {
+        background-color: #343a40;
+        margin: 0;
+        padding: 0;
+    }
     .imagenFondo {
         background-image: url('{% static 'img/fondo3.jpg' %}');
         background-size: contain;
         background-position: center center;
+        background-position-y: center;
         background-repeat: no-repeat;
-        height: 100%;
         width: 100%;
-        margin: 0;
-        padding: 20px;
+        height: 700px;
+        padding: 0px;
+        z-index: 1;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        opacity: 10;
     }
     .container-fluid {
         padding: 0;
     }
-
     .main-content {
         text-align: center;
         padding: 2rem 0;
-        background-color: #f8f9fa; /* Un color de fondo claro para contrastar con la imagen */
+        background-color: transparent;
+        position: relative;
+        z-index: 0;
     }
-
     .main-content h1 {
         font-size: 2.5rem;
         font-weight: bold;
         color: #333;
     }
-
     .main-content p {
         font-size: 1.25rem;
         color: #666;
     }
-
     .main-content .btn {
         font-size: 1.25rem;
+    }
+    .carousel-container {
+        margin: 20px auto;
+        max-width: 1200px; /* Ajusta el ancho máximo según sea necesario */
+    }
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap'); /* Importa la fuente Montserrat */
+    .carousel-title {
+        /* ... otros estilos ... */
+        color:rgb(255, 255, 255);
+        background-color:none; /* Agrega un fondo gris claro */
+        padding: 10px; /* Agrega un poco de relleno */
+        border-radius: 5px; /* Agrega bordes redondeados */
+        text-align: center;
+        font-family: 'Montserrat', sans-serif; /* Aplica la fuente Montserrat */
+        font-weight: 300; /* Establece el grosor de la fuente */
+    }
+
+    .producto-item {
+        width: 250px;
+        padding: 20px;
+        border: none;
+        transition: transform 0.3s ease-in-out;
+    }
+
+    .producto-item:hover {
+        transform: translateY(-5px); /* Elevar el producto ligeramente al pasar el mouse */
+    }
+
+    .producto-imagen {
+        max-height: 200px;
+        object-fit: cover;
+        border-radius: 5px;
+        transition: transform 0.3s ease-in-out;
+    }
+
+    .producto-imagen:hover {
+        transform: scale(1.05);
+    }
+
+    .producto-nombre {
+        margin-top: 10px;
+        font-size: 1.2rem;
+    }
+
+    .producto-descripcion {
+        margin-top: 5px;
+        font-size: 0.9rem;
+    }
+
+    .producto-boton {
+        margin-top: 10px;
+    }
+
+    .carousel-control-prev, .carousel-control-next {
+        background-color: rgba(0, 0, 0, 0.3);
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    .carousel-indicators {
+        bottom: -30px; /* Ajusta la posición de los indicadores */
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="imagenFondo"></div> <!-- Esta es solo la imagen de fondo -->
+    <div class="imagenFondo"></div>
+
+     <div class="carousel-container">
+        <h2 class="carousel-title">Descubre Nuestros Productos</h2>
+
+        <div id="productosCarousel" class="carousel slide" data-bs-ride="carousel">
+            <div class="carousel-inner">
+                {% for productos_grupo in productos_grupos %}
+                    <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                        <div class="d-flex justify-content-around">
+                            {% for producto in productos_grupo %}
+                                <div class="text-center producto-item">
+                                    <img src="{{ producto.imagen.url }}" class="producto-imagen" alt="{{ producto.nombre }}">
+                                    <h5 class="producto-nombre">{{ producto.nombre }}</h5>
+                                    <p class="producto-descripcion">{{ producto.descripcion|truncatechars:50 }}</p>
+                                    
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#productosCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Anterior</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#productosCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Siguiente</span>
+            </button>
+        </div>
+    </div>
 {% endblock %}
 
 <!--

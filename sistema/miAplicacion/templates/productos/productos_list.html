@@ -6,6 +6,83 @@
     <link rel="stylesheet" href="{% static 'css/productos.css' %}">
 {% endblock %}
 {% block content %}
+<style>
+    .filter-section {
+        margin-bottom: 20px;
+    }
+    
+    .filter-section h4 {
+        font-size: 1.2rem;
+        margin-bottom: 5px; /* Reducido el margen */
+    }
+    
+    .filter-section ul {
+        list-style: none;
+        padding: 0;
+    }
+    
+    .filter-section ul li {
+        margin-bottom: 2px; /* Reducido el margen */
+    }
+    
+    .filter-section ul li a {
+        display: block;
+        padding: 5px 10px;
+        border-radius: 3px;
+        text-decoration: none;
+        color: #333;
+        background-color:rgb(179, 130, 130); /* Agregado fondo sutil */
+    }
+    
+    .filter-section ul li a:hover {
+        background-color:rgb(179, 130, 130);
+    }
+    
+    .filter-section .btn-secondary {
+        background-color:rgb(179, 130, 130); /* Estilo mejorado del botón */
+        border: none;
+        padding: 8px 12px;
+        border-radius: 3px;
+        color: #333;
+    }
+    
+    .filter-section .btn-secondary:hover {
+        background-color:rgb(165, 137, 137);
+    }
+    .product-card {
+        max-width: 250px; /* Reducido el ancho máximo */
+        margin: 10px auto; /* Centrar las tarjetas */
+    }
+    
+    .product-img {
+        max-height: 150px; /* Reducido el tamaño de las imágenes */
+    }
+    
+    .card-text {
+        font-size: 0.9rem; /* Reducido el tamaño de la fuente */
+    }
+    
+    /* Media queries para diferentes tamaños de pantalla */
+    @media (max-width: 768px) {
+        .product-card {
+            max-width: 200px; /* Reducido el ancho máximo en pantallas pequeñas */
+        }
+    
+        .product-img {
+            max-height: 120px; /* Reducido el tamaño de las imágenes en pantallas pequeñas */
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .product-card {
+            max-width: 150px; /* Reducido el ancho máximo en pantallas muy pequeñas */
+        }
+    
+        .product-img {
+            max-height: 100px; /* Reducido el tamaño de las imágenes en pantallas muy pequeñas */
+        }
+    }
+</style>
 <div class="container my-5">
     <div class="row">
         <!-- Sección de Filtrado -->

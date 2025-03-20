@@ -50,6 +50,9 @@
         .custom-navbar {
             height: 45px; /* Ajusta la altura según tus necesidades */
         }
+        .container {
+            max-width: 80%; /* O un valor específico en píxeles, por ejemplo, 1200px */
+        }
 
         .container-fluid {
             color: White;
@@ -64,9 +67,30 @@
         .footer {
             background-color: #343a40;
             color: #fff;
-            padding: 20px 0;
+            padding: 10px 0;
             text-align: center;
-            margin-top: auto; /* Pushes the footer to the bottom of the page */
+        }
+
+        .footer p,
+        .footer h5 {
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .footer-payment i {
+            font-size: 2rem;
+            margin-right: 5px;
+        }
+
+        .footer-social a {
+            font-size: 2rem;
+            margin-right: 10px;
+        }
+
+        #fecha-hora-nav {
+            background-color: rgb(124, 116, 116);
+            padding: 5px 10px;
+            border-radius: 5px;
         }
 
         .filter-section {
@@ -91,79 +115,127 @@
 
     {% block extra_styles %}{% endblock %}
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100">
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark fixed-top custom-navbar">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="{% url 'index' %}">
-                <i class="fas fa-tools"></i> Ferretería
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    {% if user.is_authenticated %}
-                        {% if user.is_staff %}
-                            <!-- Enlaces para administradores -->
+    {% block navbar %}
+        <nav class="navbar navbar-expand-lg navbar-dark fixed-top custom-navbar">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="{% url 'index' %}">
+                    <i class="fas fa-tools"></i> Ferretería
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto">
+                        {% if user.is_authenticated %}
+                            {% if user.is_staff %}
+                                <!-- Enlaces para administradores -->
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{% url 'lista_consultas' %}">Consultas</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{% url 'categoria_list' %}">Categorías</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{% url 'proveedor_list' %}">Proveedores</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{% url 'productos_list' %}">Productos</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{% url 'venta_lista' %}">Ventas</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{% url 'cliente_lista' %}">Clientes</a>
+                                </li>
+                            {% else %}
+                                <!-- Enlaces para usuarios comunes -->
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{% url 'productos_list' %}">Productos</a>
+                                </li>
+                            {% endif %}
+                        {% endif %}
+                    </ul>
+                    {% with excluded_paths="/Ferretería/,/consultas/enviar/,/consultas/responder/" %}
+                        {% if user.is_authenticated and request.path not in excluded_paths and not request.path|startswith:'/consultas/responder/' and not hide_search_bar %}
+                            <form class="d-flex" method="GET" action="{% block search_url %}{% endblock %}">
+                                <input class="form-control me-2" type="search" name="q" placeholder="Buscar por {{ busqueda_placeholder }}" aria-label="Search">
+                                <button class="btn btn-outline-light" type="submit">Buscar</button>
+                            </form>
+                        {% endif %}
+                    {% endwith %}
+                    <ul class="nav navbar-nav ms-auto">
+                        <span class="nav-link" id="fecha-hora-nav">
+                            <i class="far fa-calendar-alt"></i> <span id="fecha-hora-texto"></span>
+                        </span>
+                        {% if user.is_authenticated %}
                             <li class="nav-item">
-                                <a class="nav-link" href="{% url 'lista_consultas' %}">Consultas</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{% url 'categoria_list' %}">Categorías</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{% url 'proveedor_list' %}">Proveedores</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{% url 'productos_list' %}">Productos</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{% url 'venta_lista' %}">Ventas</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{% url 'cliente_lista' %}">Clientes</a>
+                                <a class="nav-link" href="{% url 'account_logout' %}">{{ request.user }} | Logout</a>
                             </li>
                         {% else %}
-                            <!-- Enlaces para usuarios comunes -->
                             <li class="nav-item">
-                                <a class="nav-link" href="{% url 'productos_list' %}">Productos</a>
+                                <a class="nav-link" href="{% url 'account_login' %}">Login</a>
                             </li>
                         {% endif %}
-                    {% endif %}
-                </ul>
-                {% with excluded_paths="/Ferretería/,/consultas/enviar/,/consultas/responder/" %}
-                    {% if user.is_authenticated and request.path not in excluded_paths and not request.path|startswith:'/consultas/responder/' and not hide_search_bar %}
-                        <form class="d-flex" method="GET" action="{% block search_url %}{% endblock %}">
-                            <input class="form-control me-2" type="search" name="q" placeholder="Buscar por {{ busqueda_placeholder }}" aria-label="Search">
-                            <button class="btn btn-outline-light" type="submit">Buscar</button>
-                        </form>
-                    {% endif %}
-                {% endwith %}
-                <ul class="nav navbar-nav ms-auto">
-                    {% if user.is_authenticated %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'account_logout' %}">{{ request.user }} | Logout</a>
-                        </li>
-                    {% else %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'account_login' %}">Login</a>
-                        </li>
-                    {% endif %}
-                </ul>
+                    </ul>
+                </div>
             </div>
-        </div>
-    </nav>
+        </nav>
+    {% endblock %}
 
+    <!-- Fecha y hora -->
+    <script>
+        function mostrarFechaHoraNav() {
+            const ahora = new Date();
+            const opciones = {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            };
+            document.getElementById('fecha-hora-texto').textContent = ahora.toLocaleDateString('es-AR', opciones);
+        }
+        mostrarFechaHoraNav();
+        setInterval(mostrarFechaHoraNav, 1000);
+    </script>
     <!-- Content Block -->
-    <main class="container-fluid">
+    <main class="container-fluid flex-grow-1">
         {% block content %}{% endblock %}
     </main>
 
     <!-- Footer -->
-    <footer class="footer">
-        <p>&copy; 2024 Ferretería. Todos los derechos reservados.</p>
-    </footer>
+    {% block footer %}
+        <footer class="footer bg-dark text-light text-center mt-auto">
+            <div class="cover">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <h5>Contacto</h5>
+                        <p>Av. Belgrano 1256, Villa Cura Brochero, Córdoba</p>
+                        <p>Tel: +54 9 3544 61-9096</p>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <h5>Síguenos</h5>
+                        <a href="https://www.instagram.com" class="text-warning mx-2"><i class="fab fa-instagram fa-2x"></i></a>
+                        <a href="https://www.facebook.com" class="text-warning mx-2"><i class="fab fa-facebook fa-2x"></i></a>
+                    </div>
+                    <div class="col-md-4">
+                        <h5>Ferretería</h5>
+                        <p>© 2024 Ferretería. Todos los derechos reservados.</p>
+                    </div>
+                    <div class="footer-payment">
+                        <i class="fab fa-cc-visa"></i>
+                        <i class="fab fa-cc-mastercard"></i>
+                        <i class="fab fa-paypal"></i>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    {% endblock %}
+
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
