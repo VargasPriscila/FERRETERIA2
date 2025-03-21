@@ -1,0 +1,30 @@
+{% extends "base.html" %}  <!-- Extiende de tu plantilla base -->
+
+{% block content %}
+<div class="container mt-5">
+    <h1>Iniciar sesión con Google</h1>
+
+    <!-- Mensajes de error o éxito -->
+    {% if messages %}
+        <div class="alert alert-info">
+            {% for message in messages %}
+                {{ message }}
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Botón para iniciar sesión con Google -->
+    <div class="mt-4">
+        <a href="{% provider_login_url 'google' %}" class="btn btn-danger">
+            <i class="fab fa-google"></i> Continuar con Google
+        </a>
+    </div>
+
+    <!-- Enlace para volver al inicio de sesión normal -->
+    <div class="mt-4">
+        <a href="{% url 'account_login' %}" class="btn btn-secondary">
+            Volver al inicio de sesión normal
+        </a>
+    </div>
+</div>
+{% endblock %}
