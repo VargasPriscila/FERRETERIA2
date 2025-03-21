@@ -90,19 +90,6 @@ class ProveedorForm(forms.ModelForm):
 
 # ------------------------------ Productos ------------------------------
 class ProductoForm(forms.ModelForm):
-    """
-    Formulario para el modelo `Producto`.
-
-    Campos:
-    - nombre: Nombre del producto.
-    - descripcion: Descripción del producto.
-    - precio: Precio del producto.
-    - cantidad_stock: Cantidad en stock disponible.
-    - categoria: Categoría a la que pertenece el producto.
-    - proveedor: Proveedor del producto.
-
-    Los widgets personalizados añaden clases CSS para mejorar la apariencia del formulario.
-    """
     class Meta:
         model = Producto
         fields = ['nombre', 'imagen', 'descripcion', 'precio', 'cantidad_stock', 'categoria', 'proveedor', 'codigo_barras']
@@ -111,6 +98,7 @@ class ProductoForm(forms.ModelForm):
             'descripcion': forms.TextInput(attrs={'class': 'form-control'}),
             'precio': forms.NumberInput(attrs={'class': 'form-control'}),
             'cantidad_stock': forms.NumberInput(attrs={'class': 'form-control'}),
+            'codigo_barras': forms.TextInput(attrs={'class': 'form-control'}),
         }
 
 

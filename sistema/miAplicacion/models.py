@@ -242,19 +242,15 @@ class Producto(models.Model):
     fecha_actualizacion = models.DateTimeField(auto_now=True)
     proveedor = models.ForeignKey('Proveedor', on_delete=models.SET_NULL, null=True, blank=True)
     imagen = models.ImageField(upload_to='productos/', default='productos/default.png', blank=True, null=True)
-
-    # Campo para almacenar el código de barras
-    codigo_barras = models.CharField(max_length=50, null=True, blank=True)
-
-    # Imagen del código de barras generado
+    codigo_barras = models.CharField(max_length=50, null=True, blank=True, unique=True)  # Asegúrate de que sea único
     imagen_codigo_barras = models.ImageField(upload_to='codigos_barras/', blank=True, null=True)
 
     def save(self, *args, **kwargs):
         """
         Sobreescribe el método save para generar un código de barras único
-        si no tiene uno asignado.
+        solo si es un nuevo producto y no se proporciona un código de barras.
         """
-        if not self.codigo_barras:
+        if not self.pk and not self.codigo_barras:  # Solo genera el código de barras si es un nuevo producto y no tiene código
             self.codigo_barras = str(uuid.uuid4().int)[:13]  # Genera un código único de 13 dígitos
             self.generar_imagen_codigo_barras()  # Genera la imagen del código de barras
 

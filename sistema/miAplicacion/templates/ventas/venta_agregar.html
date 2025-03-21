@@ -49,11 +49,6 @@
                     </td>
                     <td>
                         {{ form.cantidad }}
-                        <!--{% if form.cantidad.errors %}
-                        <div class="text-danger">
-                            {{ form.cantidad.errors|join:", " }}
-                        </div>
-                        {% endif %}-->
                     </td>
                     <td>
                         <div class="d-none">
@@ -63,7 +58,7 @@
                             type="text" 
                             class="form-control precio-unitario" 
                             name="{{ form.precio_unitario.html_name }}" 
-                            id="id_{{ form.prefix }}_precio_unitario"
+                            id="id_{{ form.prefix }}_precio_unitario_visible"
                             value="{{ form.initial.precio_unitario|default:0.00 }}" 
                             readonly>
                     </td>
@@ -76,11 +71,10 @@
                             value="{{ form.initial.importe|default:0.00 }}" 
                             readonly>
                     </td>
-                    
                     <td>
                         <button type="button" class="btn btn-danger btn-delete-row">Eliminar</button>
                     </td>
-                    </tr>
+                </tr>
                 {% endfor %}
             </tbody>
         </table>
@@ -90,296 +84,303 @@
 </div>
 
 <script>
-// Función para añadir el evento "change" a un campo producto-select
-function addProductoSelectListener(select) {
-    select.addEventListener('change', function () {
-        const productoId = this.value;
-        const precioField = this.closest('tr').querySelector('.precio-unitario');
-
-        if (productoId) {
-            fetch(`/obtener_precio/?producto_id=${productoId}`) // Hace una solicitud HTTP al servidor.
-                .then(response => response.json())              // Procesa la respuesta cuando la solicitud es exitosa.
-                .then(data => {
-                    if (data.precio) {
-                        precioField.value = data.precio;
-                    } else {
-                        alert('Error al obtener el precio.');
-                    }
-                })
-                .catch(error => console.error('Error:', error)); // Captura errores si ocurre un problema durante la solicitud.
-        } else {
-            precioField.value = '';
-        }
-    });
-}
-
-// Función para calcular el importe basado en cantidad y precio unitario
-function calculateImporte(row) {
-    const cantidadField = row.querySelector('input[name$="cantidad"]');
-    const precioField = row.querySelector('.precio-unitario');
-    const importeField = row.querySelector('input[name$="importe"]');
+    // Función para sincronizar el campo visible con el campo oculto
+    function sincronizarPrecioUnitario() {
+        const rows = document.querySelectorAll('#detalle-venta-tbody tr');
+        rows.forEach(row => {
+            const precioVisible = row.querySelector('.precio-unitario');
+            const precioOculto = row.querySelector('input[name$="-precio_unitario"]');
     
-    const cantidad = parseFloat(cantidadField.value) || 0;
-    const precio = parseFloat(precioField.value) || 0;
-    
-    const importe = cantidad * precio;
-    
-    if (importeField) {
-        importeField.value = importe.toFixed(2); // Mostrar con 2 decimales
-    }
-}
-// Al cargar la página, se seleccionan todas las filas del detalle de venta y se calcula el importe inicial de cada una.
-document.addEventListener('DOMContentLoaded', function () {
-    const rows = document.querySelectorAll('#detalle-venta-tbody tr');
-    rows.forEach(calculateImporte);
-});
-
-
-
-// Función para añadir eventos de cálculo en una fila
-function addEventListenersToRow(row) {
-    const cantidadField = row.querySelector('input[name$="cantidad"]');
-    const precioField = row.querySelector('.precio-unitario');
-    const productoSelect = row.querySelector('.producto-select');
-
-    if (cantidadField) {
-        cantidadField.addEventListener('input', () => calculateImporte(row)); // Evento que se dispara cuando el valor de un campo cambia
-    }
-
-    if (precioField) {
-        precioField.addEventListener('input', () => calculateImporte(row));   // Evento que se dispara cuando el valor de un campo cambia
-    }
-
-    if (productoSelect) {    // Añade un evento change para actualizar el precio unitario basado en el producto seleccionado.                                 
-        addProductoSelectListener(productoSelect); 
-    }
-}
-
-// Oculta el botón en la primera fila para evitar que se elimine si solo hay una fila.
-function updateDeleteButtons() {
-    // Seleccionar todas las filas de la tabla del cuerpo del detalle de venta
-    const rows = document.querySelectorAll('#detalle-venta-tbody tr');
-
-    // Iterar sobre cada fila y su índice
-    rows.forEach((row, index) => {
-        // Obtener el botón "Eliminar" de la fila actual
-        const deleteButton = row.querySelector('.btn-delete-row');
-
-        // Si la fila es la primera, ocultar el botón "Eliminar"
-        if (index === 0) {
-            deleteButton.style.display = 'none'; // Oculta visualmente el botón
-        } else {
-            // Para las demás filas, mostrar el botón "Eliminar"
-            deleteButton.style.display = 'inline-block'; // Muestra el botón
-        }
-    });
-}
-
-
-
-// Script para agregar una nueva fila
-document.getElementById('add-row').addEventListener('click', function () {
-    const tbody = document.getElementById('detalle-venta-tbody');
-    const rows = tbody.querySelectorAll('tr');
-    const newRow = rows[rows.length - 1].cloneNode(true);
-
-    // Actualizar nombres e IDs en la nueva fila
-    const totalForms = document.getElementById('id_detalleventa_set-TOTAL_FORMS');
-    const newIndex = parseInt(totalForms.value);
-
-    newRow.querySelectorAll('input, select').forEach(field => {
-        if (field.name) {
-            field.name = field.name.replace(/-\d+-/, `-${newIndex}-`);
-            field.id = field.id.replace(/-\d+-/, `-${newIndex}-`);
-        }
-        if (field.type === 'text' || field.tagName === 'SELECT') {
-            field.value = ''; // Limpiar valores
-        }
-    });
-
-    totalForms.value = newIndex + 1; // Incrementar el contador total
-    tbody.appendChild(newRow);
-
-    // Añadir eventos a la nueva fila
-    addEventListenersToRow(newRow);
-
-    // Actualizar visibilidad de los botones "Eliminar"
-    updateDeleteButtons();
-});
-
-
-// Script para eliminar una fila
-document.addEventListener('click', function (event) { //Objeto que contiene información sobre el evento que ocurrió (por ejemplo, qué elemento fue clickeado).
-    
-    if (event.target.classList.contains('btn-delete-row')) { //Verifica si el elemento clickeado tiene la clase btn-delete-row.
-        const row = event.target.closest('tr');
-        const deleteField = row.querySelector('input[name$="-DELETE"]'); // Busca un campo <input> dentro de la fila cuyo atributo name termina con -DELETE.
-
-        if (deleteField) {
-            // Marcar la fila como eliminada
-            deleteField.checked = true; // Django reconoce True
-        }
-
-        // Ocultar la fila visualmente
-        row.style.display = 'none';
-
-        updateDeleteButtons(); // Actualizar botones "Eliminar"
-    }
-});
-
-// Añadir eventos a las filas iniciales
-document.querySelectorAll('#detalle-venta-tbody tr').forEach(addEventListenersToRow);
-
-// Ocultar botón "Eliminar" en la primera fila al cargar la página
-document.addEventListener('DOMContentLoaded', updateDeleteButtons);
-
-
-
-
-
-
-
-
-
-
-
-// AGREGAR PRODUCTO POR CÓDIGO DE BARRAS
-document.addEventListener('DOMContentLoaded', function () {
-    let barcodeInput = document.getElementById("barcode-input");
-    let scanTimeout = null;
-    let scannedCode = "";
-
-    if (!barcodeInput) {
-        console.error("Error: No se encontró el input de código de barras.");
-        return;
-    }
-
-    // Detecta cuando se ingresa un código de barras
-    document.addEventListener("keydown", function (event) {
-        if (event.key === "Shift" || event.key === "Tab") {
-            return; // Ignorar teclas no deseadas
-        }
-
-        // Si el escáner envía "Enter" al final, se procesa
-        if (event.key === "Enter") {
-            event.preventDefault();
-            if (scannedCode.length > 0) {
-                agregarProductoPorCodigo(scannedCode);
-                scannedCode = ""; // Reiniciar código escaneado
+            if (precioVisible && precioOculto) {
+                precioOculto.value = precioVisible.value;
             }
+        });
+    }
+    
+    // Evento para sincronizar los campos antes de enviar el formulario
+    document.querySelector('form').addEventListener('submit', function (event) {
+        sincronizarPrecioUnitario(); // Sincroniza los campos antes de enviar
+    });
+    
+    // Función para añadir el evento "change" a un campo producto-select
+    function addProductoSelectListener(select) {
+        select.addEventListener('change', function () {
+            const productoId = this.value;
+            const precioField = this.closest('tr').querySelector('.precio-unitario');
+    
+            if (productoId) {
+                fetch(`/obtener_precio/?producto_id=${productoId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.precio) {
+                            precioField.value = data.precio;
+                        } else {
+                            alert('Error al obtener el precio.');
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+            } else {
+                precioField.value = '';
+            }
+        });
+    }
+    
+    // Función para calcular el importe basado en cantidad y precio unitario
+    function calculateImporte(row) {
+        const cantidadField = row.querySelector('input[name$="cantidad"]');
+        const precioField = row.querySelector('.precio-unitario');
+        const importeField = row.querySelector('input[name$="importe"]');
+        
+        const cantidad = parseFloat(cantidadField.value) || 0;
+        const precio = parseFloat(precioField.value) || 0;
+        
+        const importe = cantidad * precio;
+        
+        if (importeField) {
+            importeField.value = importe.toFixed(2); // Mostrar con 2 decimales
+        }
+    }
+    
+    // Al cargar la página, se seleccionan todas las filas del detalle de venta y se calcula el importe inicial de cada una.
+    document.addEventListener('DOMContentLoaded', function () {
+        const rows = document.querySelectorAll('#detalle-venta-tbody tr');
+        rows.forEach(calculateImporte);
+    });
+    
+    // Función para añadir eventos de cálculo en una fila
+    function addEventListenersToRow(row) {
+        const cantidadField = row.querySelector('input[name$="cantidad"]');
+        const precioField = row.querySelector('.precio-unitario');
+        const productoSelect = row.querySelector('.producto-select');
+    
+        if (cantidadField) {
+            cantidadField.addEventListener('input', () => calculateImporte(row));
+        }
+    
+        if (precioField) {
+            precioField.addEventListener('input', () => calculateImporte(row));
+        }
+    
+        if (productoSelect) {
+            addProductoSelectListener(productoSelect);
+        }
+    }
+    
+    // Oculta el botón en la primera fila para evitar que se elimine si solo hay una fila.
+    function updateDeleteButtons() {
+        const rows = document.querySelectorAll('#detalle-venta-tbody tr');
+    
+        rows.forEach((row, index) => {
+            const deleteButton = row.querySelector('.btn-delete-row');
+    
+            if (index === 0) {
+                deleteButton.style.display = 'none'; // Oculta el botón en la primera fila
+            } else {
+                deleteButton.style.display = 'inline-block'; // Muestra el botón en las demás filas
+            }
+        });
+    }
+    
+    // Script para agregar una nueva fila
+    document.getElementById('add-row').addEventListener('click', function () {
+        const tbody = document.getElementById('detalle-venta-tbody');
+        const rows = tbody.querySelectorAll('tr');
+        const newRow = rows[rows.length - 1].cloneNode(true);
+    
+        // Limpiar los valores de la nueva fila
+        newRow.querySelectorAll('input, select').forEach(field => {
+            if (field.type === 'text' || field.type === 'number' || field.tagName === 'SELECT') {
+                field.value = ''; // Limpiar valores
+            }
+        });
+    
+        // Actualizar nombres e IDs en la nueva fila
+        const totalForms = document.getElementById('id_detalleventa_set-TOTAL_FORMS');
+        const newIndex = parseInt(totalForms.value);
+    
+        newRow.querySelectorAll('input, select').forEach(field => {
+            if (field.name) {
+                field.name = field.name.replace(/-\d+-/, `-${newIndex}-`);
+                field.id = field.id.replace(/-\d+-/, `-${newIndex}-`);
+            }
+        });
+    
+        totalForms.value = newIndex + 1; // Incrementar el contador total
+        tbody.appendChild(newRow);
+    
+        // Añadir eventos a la nueva fila
+        addEventListenersToRow(newRow);
+    
+        // Actualizar visibilidad de los botones "Eliminar"
+        updateDeleteButtons();
+    });
+    
+    // Script para eliminar una fila
+    document.addEventListener('click', function (event) {
+        if (event.target.classList.contains('btn-delete-row')) {
+            const row = event.target.closest('tr');
+            const deleteField = row.querySelector('input[name$="-DELETE"]');
+    
+            if (deleteField) {
+                deleteField.checked = true; // Marcar la fila como eliminada
+            }
+    
+            row.style.display = 'none'; // Ocultar la fila visualmente
+    
+            updateDeleteButtons(); // Actualizar botones "Eliminar"
+        }
+    });
+    
+    // Añadir eventos a las filas iniciales
+    document.querySelectorAll('#detalle-venta-tbody tr').forEach(addEventListenersToRow);
+    
+    // Ocultar botón "Eliminar" en la primera fila al cargar la página
+    document.addEventListener('DOMContentLoaded', updateDeleteButtons);
+    
+    // AGREGAR PRODUCTO POR CÓDIGO DE BARRAS
+    document.addEventListener('DOMContentLoaded', function () {
+        let barcodeInput = document.getElementById("barcode-input");
+        let scanTimeout = null;
+        let scannedCode = "";
+    
+        if (!barcodeInput) {
+            console.error("Error: No se encontró el input de código de barras.");
             return;
         }
-
-        // Almacenar el código escaneado
-        scannedCode += event.key;
-
-        // Reiniciar el temporizador si el usuario sigue escaneando
-        if (scanTimeout) {
-            clearTimeout(scanTimeout);
-        }
-
-        // Esperar 200ms para detectar el fin del escaneo
-        scanTimeout = setTimeout(() => {
-            if (scannedCode.length > 0) {
-                agregarProductoPorCodigo(scannedCode);
-                scannedCode = ""; // Reiniciar código escaneado
+    
+        // Enfocar el campo de código de barras solo cuando sea necesario
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Shift" || event.key === "Tab") {
+                return; // Ignorar teclas no deseadas
             }
-        }, 200);
-    });
-
-    function agregarProductoPorCodigo(codigoBarras) {
-        fetch(`/obtener_producto/?codigo_barras=${codigoBarras}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    alert("Producto no encontrado");
-                    return;
+    
+            // Enfocar el campo de código de barras solo si no está enfocado
+            if (document.activeElement !== barcodeInput) {
+                barcodeInput.focus();
+            }
+    
+            // Resto del código para manejar el escaneo...
+            if (event.key === "Enter") {
+                event.preventDefault();
+                if (scannedCode.length > 0) {
+                    agregarProductoPorCodigo(scannedCode);
+                    scannedCode = "";
                 }
-
-                let tbody = document.getElementById('detalle-venta-tbody');
-                let filas = tbody.querySelectorAll('tr');
-                let productoEncontrado = false;
-
-                filas.forEach(row => {
-                    let select = row.querySelector('.producto-select');
-                    let cantidadField = row.querySelector('input[name$="cantidad"]');
-
-                    if (select && cantidadField && select.value == data.id) {
-                        cantidadField.value = parseInt(cantidadField.value) + 1;
-                        calculateImporte(row);
-                        productoEncontrado = true;
+                return;
+            }
+    
+            scannedCode += event.key;
+    
+            if (scanTimeout) {
+                clearTimeout(scanTimeout);
+            }
+    
+            scanTimeout = setTimeout(() => {
+                if (scannedCode.length > 0) {
+                    agregarProductoPorCodigo(scannedCode);
+                    scannedCode = "";
+                }
+            }, 200);
+        });
+    
+        // No enfocar el campo de código de barras si el clic fue en un selector o campo de entrada
+        document.addEventListener("click", function (event) {
+            if (event.target.tagName === 'SELECT' || event.target.tagName === 'INPUT') {
+                return;
+            }
+    
+            // Enfocar el campo de código de barras solo si no está enfocado
+            if (document.activeElement !== barcodeInput) {
+                barcodeInput.focus();
+            }
+        });
+    
+        function agregarProductoPorCodigo(codigoBarras) {
+            fetch(`/obtener_producto/?codigo_barras=${codigoBarras}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert("Producto no encontrado");
+                        return;
                     }
-                });
-
-                if (!productoEncontrado) {
-                    agregarNuevaFila(data.id, data.nombre, data.precio);
-                }
-            })
-            .catch(error => console.error('Error:', error));
-    }
-
-    function agregarNuevaFila(productoId, nombreProducto, precioUnitario) {
-    let tbody = document.getElementById('detalle-venta-tbody');
-    let totalForms = document.getElementById('id_detalleventa_set-TOTAL_FORMS');
-    let newIndex = parseInt(totalForms.value);
-
-    let newRow = document.createElement("tr");
-    newRow.innerHTML = `
-        <td>
-            <select name="detalleventa_set-${newIndex}-producto" class="producto-select form-control">
-                <option value="${productoId}" selected>${nombreProducto}</option>
-            </select>
-        </td>
-        <td><input type="text" class="form-control precio-unitario" value="${precioUnitario.toFixed(2)}" readonly></td>
-        <td><input type="number" name="detalleventa_set-${newIndex}-cantidad" class="form-control cantidad-input" value="1" min="1"></td>
-        <td><input type="text" name="detalleventa_set-${newIndex}-importe" class="form-control importe-input" value="${precioUnitario.toFixed(2)}" readonly></td>
-        <td>
-            <button type="button" class="btn btn-danger btn-sm delete-row">
-                <i class="fas fa-trash"></i> 
-            </button>
-        </td>
-    `;
-
-    tbody.appendChild(newRow);
-    totalForms.value = newIndex + 1;
-
-    addEventListenersToRow(newRow);
-    updateDeleteButtons();
-}
-
-    function addEventListenersToRow(row) {
-        let cantidadInput = row.querySelector('.cantidad-input');
-        let precioInput = row.querySelector('.precio-unitario');
-        let importeInput = row.querySelector('.importe-input');
-
-        cantidadInput.addEventListener('input', function () {
-            let cantidad = parseInt(cantidadInput.value) || 1;
-            let precio = parseFloat(precioInput.value) || 0;
-            importeInput.value = (cantidad * precio).toFixed(2);
-        });
-    }
-
-    function updateDeleteButtons() {
-        document.querySelectorAll('.delete-row').forEach(button => {
-            button.addEventListener('click', function () {
-                this.closest('tr').remove();
+    
+                    let tbody = document.getElementById('detalle-venta-tbody');
+                    let filas = tbody.querySelectorAll('tr');
+                    let productoEncontrado = false;
+    
+                    filas.forEach(row => {
+                        let select = row.querySelector('.producto-select');
+                        let cantidadField = row.querySelector('input[name$="cantidad"]');
+    
+                        if (select && cantidadField && select.value == data.id) {
+                            cantidadField.value = parseInt(cantidadField.value) + 1;
+                            calculateImporte(row);
+                            productoEncontrado = true;
+                        }
+                    });
+    
+                    if (!productoEncontrado) {
+                        agregarNuevaFila(data.id, data.nombre, data.precio);
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+    
+        function agregarNuevaFila(productoId, nombreProducto, precioUnitario) {
+            let tbody = document.getElementById('detalle-venta-tbody');
+            let totalForms = document.getElementById('id_detalleventa_set-TOTAL_FORMS');
+            let newIndex = parseInt(totalForms.value);
+    
+            let newRow = document.createElement("tr");
+            newRow.innerHTML = `
+                <td>
+                    <select name="detalleventa_set-${newIndex}-producto" class="producto-select form-control">
+                        <option value="${productoId}" selected>${nombreProducto}</option>
+                    </select>
+                </td>
+                <td><input type="number" name="detalleventa_set-${newIndex}-cantidad" class="form-control cantidad-input" value="1" min="1"></td>
+                <td>
+                    <div class="d-none">
+                        <input type="hidden" name="detalleventa_set-${newIndex}-precio_unitario" value="${precioUnitario.toFixed(2)}">
+                    </div>
+                    <input type="text" class="form-control precio-unitario" value="${precioUnitario.toFixed(2)}" readonly>
+                </td>
+                <td><input type="text" name="detalleventa_set-${newIndex}-importe" class="form-control importe-input" value="${precioUnitario.toFixed(2)}" readonly></td>
+                <td>
+                    <button type="button" class="btn btn-danger btn-delete-row">Eliminar</button>
+                </td>
+            `;
+    
+            tbody.appendChild(newRow);
+            totalForms.value = newIndex + 1;
+    
+            addEventListenersToRow(newRow);
+            updateDeleteButtons();
+        }
+    
+        function addEventListenersToRow(row) {
+            let cantidadInput = row.querySelector('.cantidad-input');
+            let precioInput = row.querySelector('.precio-unitario');
+            let importeInput = row.querySelector('.importe-input');
+    
+            cantidadInput.addEventListener('input', function () {
+                let cantidad = parseInt(cantidadInput.value) || 1;
+                let precio = parseFloat(precioInput.value) || 0;
+                importeInput.value = (cantidad * precio).toFixed(2);
             });
-        });
-    }
-
-    // Mantener el input de código de barras enfocado
-    document.addEventListener("click", function () {
-        barcodeInput.focus();
+        }
+    
+        function updateDeleteButtons() {
+            document.querySelectorAll('.delete-row').forEach(button => {
+                button.addEventListener('click', function () {
+                    this.closest('tr').remove();
+                });
+            });
+        }
     });
-
-    barcodeInput.focus();
-});
-
-
 </script>
 
 {% endblock %}
-
 
 
 
