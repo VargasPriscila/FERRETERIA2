@@ -21,13 +21,12 @@ from io import BytesIO
 from django.core.files.base import ContentFile
 
 @receiver(post_save, sender=User)
-def crear_cliente(sender, instance, created, **kwargs):
+def crear_o_actualizar_cliente(sender, instance, created, **kwargs):
     if created:
         Cliente.objects.create(user=instance)
+    elif hasattr(instance, 'cliente'):
+        instance.cliente.save()
 
-@receiver(post_save, sender=User)
-def guardar_cliente(sender, instance, **kwargs):
-    instance.cliente.save()
 
 
 class Cliente(models.Model):

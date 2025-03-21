@@ -64,6 +64,15 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
+
+SOCIALACCOUNT_PIPELINE = (
+    'socialaccount.pipeline.social_auth.social_login',
+    'socialaccount.pipeline.user.get_username',
+    'socialaccount.pipeline.user.create_user',
+    'socialaccount.pipeline.user.save_user',
+    'miAplicacion.pipelines.crear_cliente_google',  # Agregamos nuestra función personalizada
+)
+
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587

@@ -65,7 +65,11 @@ def admin_login(request):
 def index(request):
     productos = Producto.objects.all().order_by('nombre')
     productos_grupos = [productos[i:i + 6] for i in range(0, len(productos), 6)]  # Agrupar en grupos de 3
-    context = {'productos_grupos': productos_grupos}
+    is_admin = request.user.is_authenticated and request.user.is_staff  # Verifica si el usuario está autenticado y es administrador
+    context = {
+        'productos_grupos': productos_grupos,
+        'is_admin': is_admin,  # Agrega la variable is_admin al contexto
+    }
     return render(request, 'index.html', context)
 
 
@@ -90,34 +94,21 @@ def admin_required(view_func):
 
 # ------------------------------ Proveedores -------------------------------------------------
 
-@login_required #Agregar esta linea para asegurar que sea visible el template si el usuario se logueo.
+@login_required
 @admin_required
 def proveedor_list(request):
     """
     Muestra una lista de todos los proveedores disponibles.
-
-    Args:
-        request: El objeto de solicitud HTTP.
-
-    Returns:
-        Renderiza la plantilla 'proveedor_list.html' con la lista de proveedores.
     """
     proveedores = Proveedor.objects.all()
-    return render(request, 'proveedores/proveedor_list.html', {'proveedores': proveedores})
+    is_admin = request.user.is_staff  # Verifica si el usuario es administrador
+    return render(request, 'proveedores/proveedor_list.html', {'proveedores': proveedores, 'is_admin': is_admin})
 
 @login_required
 @admin_required
 def proveedor_create(request):
     """
-    Crea un nuevo proveedor. Si se envía una solicitud POST válida,
-    se guarda el proveedor en la base de datos.
-
-    Args:
-        request: El objeto de solicitud HTTP.
-
-    Returns:
-        Renderiza el formulario para crear un proveedor o redirige
-        a la lista de proveedores si el formulario es válido.
+    Crea un nuevo proveedor.
     """
     if request.method == 'POST':
         form = ProveedorForm(request.POST)
@@ -126,21 +117,14 @@ def proveedor_create(request):
             return redirect('proveedor_list')
     else:
         form = ProveedorForm()
-    return render(request, 'proveedores/proveedor_form.html', {'form': form})
+    is_admin = request.user.is_staff  # Verifica si el usuario es administrador
+    return render(request, 'proveedores/proveedor_form.html', {'form': form, 'is_admin': is_admin})
 
 @login_required
 @admin_required
 def proveedor_update(request, pk):
     """
-    Actualiza un proveedor existente basado en el identificador proporcionado.
-
-    Args:
-        request: El objeto de solicitud HTTP.
-        pk: El identificador del proveedor.
-
-    Returns:
-        Renderiza el formulario de actualización de proveedor o redirige
-        a la lista de proveedores si el formulario es válido.
+    Actualiza un proveedor existente.
     """
     proveedor = get_object_or_404(Proveedor, pk=pk)
     if request.method == 'POST':
@@ -150,36 +134,29 @@ def proveedor_update(request, pk):
             return redirect('proveedor_list')
     else:
         form = ProveedorForm(instance=proveedor)
-    return render(request, 'proveedores/proveedor_form.html', {'form': form})
-
+    is_admin = request.user.is_staff  # Verifica si el usuario es administrador
+    return render(request, 'proveedores/proveedor_form.html', {'form': form, 'is_admin': is_admin})
 
 @login_required
 @admin_required
 def proveedor_delete(request, pk):
     """
-    Elimina un proveedor existente basado en el identificador proporcionado.
-    
-    Args:
-        request: El objeto de solicitud HTTP.
-        pk: El identificador del proveedor.
-    
-    Returns:
-        Renderiza una confirmación de eliminación o redirige a la lista 
-        de proveedores si se confirma la eliminación.
+    Elimina un proveedor existente.
     """
     proveedor = get_object_or_404(Proveedor, pk=pk)
-    if request.method == 'POST':
-        proveedor.delete()
-        return redirect('proveedor_list')
-    return render(request, 'proveedores/proveedor_confirm_delete.html', {'proveedor': proveedor})
+    is_admin = request.user.is_staff  # Verifica si el usuario es administrador
+    return render(request, 'proveedores/proveedor_confirm_delete.html', {'proveedor': proveedor, 'is_admin': is_admin})
 
 @login_required
 @admin_required
 def proveedor_productos(request, proveedor_id):
+    """
+    Muestra los productos asociados a un proveedor.
+    """
     proveedor = get_object_or_404(Proveedor, id=proveedor_id)
-    productos = proveedor.producto_set.all()  # Acceso a través de la relación ForeignKey
-    return render(request, 'proveedores/proveedor_productos.html', {'proveedor': proveedor, 'productos': productos})
-
+    productos = proveedor.producto_set.all()
+    is_admin = request.user.is_staff  # Verifica si el usuario es administrador
+    return render(request, 'proveedores/proveedor_productos.html', {'proveedor': proveedor, 'productos': productos, 'is_admin': is_admin})
 
 
 
@@ -190,29 +167,16 @@ def proveedor_productos(request, proveedor_id):
 def categoria_list(request):
     """
     Muestra una lista de todas las categorías disponibles.
-    
-    Args:
-        request: El objeto de solicitud HTTP.
-    
-    Returns:
-        Renderiza la plantilla 'categoria_list.html' con la lista de categorías.
     """
     categorias = Categoria.objects.all()
-    return render(request, 'categorias/categoria_list.html', {'categorias': categorias})
+    is_admin = request.user.is_staff  # Verifica si el usuario es administrador
+    return render(request, 'categorias/categoria_list.html', {'categorias': categorias, 'is_admin': is_admin})
 
 @login_required
 @admin_required
 def categoria_create(request):
     """
-    Crea una nueva categoría. Si se envía una solicitud POST válida, 
-    se guarda la categoría en la base de datos.
-    
-    Args:
-        request: El objeto de solicitud HTTP.
-    
-    Returns:
-        Renderiza el formulario para crear una categoría o redirige a la lista 
-        de categorías si el formulario es válido.
+    Crea una nueva categoría.
     """
     if request.method == 'POST':
         form = CategoriaForm(request.POST)
@@ -221,21 +185,14 @@ def categoria_create(request):
             return redirect('categoria_list')
     else:
         form = CategoriaForm()
-    return render(request, 'categorias/categoria_form.html', {'form': form})
+    is_admin = request.user.is_staff  # Verifica si el usuario es administrador
+    return render(request, 'categorias/categoria_form.html', {'form': form, 'is_admin': is_admin})
 
 @login_required
 @admin_required
 def categoria_update(request, pk):
     """
-    Actualiza una categoría existente basada en el identificador proporcionado.
-    
-    Args:
-        request: El objeto de solicitud HTTP.
-        pk: El identificador de la categoría.
-    
-    Returns:
-        Renderiza el formulario de actualización de categoría o redirige 
-        a la lista de categorías si el formulario es válido.
+    Actualiza una categoría existente.
     """
     categoria = get_object_or_404(Categoria, pk=pk)
     if request.method == 'POST':
@@ -245,28 +202,18 @@ def categoria_update(request, pk):
             return redirect('categoria_list')
     else:
         form = CategoriaForm(instance=categoria)
-    return render(request, 'categorias/categoria_form.html', {'form': form})
+    is_admin = request.user.is_staff  # Verifica si el usuario es administrador
+    return render(request, 'categorias/categoria_form.html', {'form': form, 'is_admin': is_admin})
 
 @login_required
 @admin_required
 def categoria_delete(request, pk):
     """
-    Elimina una categoría existente basada en el identificador proporcionado.
-    
-    Args:
-        request: El objeto de solicitud HTTP.
-        pk: El identificador de la categoría.
-    
-    Returns:
-        Renderiza una confirmación de eliminación o redirige a la lista de 
-        categorías si se confirma la eliminación.
+    Elimina una categoría existente.
     """
     categoria = get_object_or_404(Categoria, pk=pk)
-    if request.method == 'POST':
-        categoria.delete()
-        return redirect('categoria_list')
-    return render(request, 'categorias/categoria_confirm_delete.html', {'categoria': categoria})
-
+    is_admin = request.user.is_staff  # Verifica si el usuario es administrador
+    return render(request, 'categorias/categoria_confirm_delete.html', {'categoria': categoria, 'is_admin': is_admin})
 
 
 
@@ -310,6 +257,9 @@ class ProductosListView(ListView):
         context['categoria_seleccionada'] = self.request.GET.get('categoria', 'todo')
         context['proveedor_seleccionado'] = self.request.GET.get('proveedor', '')
 
+        # Agregar is_admin al contexto
+        context['is_admin'] = self.request.user.is_staff  # Verifica si el usuario es administrador
+
         return context
     
 
@@ -317,15 +267,7 @@ class ProductosListView(ListView):
 @login_required
 def productos_create(request):
     """
-    Crea un nuevo producto. Si se envía una solicitud POST válida, 
-    se guarda el producto en la base de datos.
-    
-    Args:
-        request: El objeto de solicitud HTTP.
-    
-    Returns:
-        Renderiza el formulario para crear un producto o redirige a la lista 
-        de productos si el formulario es válido.
+    Crea un nuevo producto.
     """
     if request.method == 'POST':
         form = ProductoForm(request.POST, request.FILES)
@@ -334,21 +276,15 @@ def productos_create(request):
             return redirect('productos_list')
     else:
         form = ProductoForm()
-    return render(request, 'productos/productos_form.html', {'form': form})
+    
+    is_admin = request.user.is_staff  # Verifica si el usuario es administrador
+    return render(request, 'productos/productos_form.html', {'form': form, 'is_admin': is_admin})
 
 @admin_required
 @login_required
 def productos_update(request, pk):
     """
-    Actualiza un producto existente basado en el identificador proporcionado.
-    
-    Args:
-        request: El objeto de solicitud HTTP.
-        pk: El identificador del producto.
-    
-    Returns:
-        Renderiza el formulario de actualización de producto o redirige a la lista 
-        de productos si el formulario es válido.
+    Actualiza un producto existente.
     """
     producto = get_object_or_404(Producto, pk=pk)
     if request.method == 'POST':
@@ -358,28 +294,19 @@ def productos_update(request, pk):
             return redirect('productos_list')
     else:
         form = ProductoForm(instance=producto)
-    return render(request, 'productos/productos_form.html', {'form': form})
+    
+    is_admin = request.user.is_staff  # Verifica si el usuario es administrador
+    return render(request, 'productos/productos_form.html', {'form': form, 'is_admin': is_admin})
 
 @admin_required
 @login_required
 def productos_confirm_delete(request, pk):
     """
-    Elimina un producto existente basado en el identificador proporcionado.
-    
-    Args:
-        request: El objeto de solicitud HTTP.
-        pk: El identificador del producto.
-    
-    Returns:
-        Renderiza una confirmación de eliminación o redirige a la lista de 
-        productos si se confirma la eliminación.
+    Elimina un producto existente.
     """
     producto = get_object_or_404(Producto, pk=pk)
-    if request.method == 'POST':
-        producto.delete()
-        return redirect('productos_list')
-    return render(request, 'productos/productos_confirm_delete.html', {'producto': producto})
-
+    is_admin = request.user.is_staff  # Verifica si el usuario es administrador
+    return render(request, 'productos/productos_confirm_delete.html', {'producto': producto, 'is_admin': is_admin})
 
 
 
@@ -410,13 +337,12 @@ class VentaListView(ListView):
                     Q(numero_comprobante__icontains=query)
                 )
         return queryset
-    
-
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['query'] = self.request.GET.get('q', '')  # Para mantener el valor de búsqueda en la barra
         context['busqueda_placeholder'] = 'fecha(D-M-A),cliente,número de comprobante.'  # Placeholder
+        context['is_admin'] = self.request.user.is_staff  # Verifica si el usuario es administrador
         return context
 # Vista para agregar una venta
 @admin_required
@@ -451,10 +377,12 @@ def agregar_venta(request):
     # Obtener lista de productos para cargar en el select
     productos = Producto.objects.all()
 
+    is_admin = request.user.is_staff  # Verifica si el usuario es administrador
     return render(request, 'ventas/venta_agregar.html', {
         'form_venta': form_venta,
         'formset_detalle': formset_detalle,
         'productos': productos,
+        'is_admin': is_admin,  # Pasar is_admin al contexto
     })
 
 # Vista para anular una venta
@@ -473,7 +401,8 @@ def venta_anular(request, pk):
 
         return redirect('venta_lista')
 
-    return render(request, 'ventas/venta_anular.html', {'venta': venta})
+    is_admin = request.user.is_staff  # Verifica si el usuario es administrador
+    return render(request, 'ventas/venta_anular.html', {'venta': venta, 'is_admin': is_admin})
 
 @admin_required
 @login_required
@@ -484,10 +413,12 @@ def detalle_venta(request, venta_id):
     # Obtener la hora del primer detalle (si existe)
     hora_venta = detalles_venta.first().hora if detalles_venta.exists() else None
 
+    is_admin = request.user.is_staff  # Verifica si el usuario es administrador
     context = {
         'venta': venta,
         'detalles_venta': detalles_venta,
         'hora_venta': hora_venta,  # Pasar la hora del primer detalle al contexto
+        'is_admin': is_admin,  # Pasar is_admin al contexto
     }
     return render(request, 'ventas/detalle_venta.html', context)
 
@@ -497,8 +428,8 @@ def detalle_venta(request, venta_id):
 @login_required
 def cliente_lista(request):
     clientes = Cliente.objects.annotate(compras_recientes=Count('venta'))
-    return render(request, 'clientes/cliente_lista.html', {'clientes': clientes})
-
+    is_admin = request.user.is_staff  # Verifica si el usuario es administrador
+    return render(request, 'clientes/cliente_lista.html', {'clientes': clientes, 'is_admin': is_admin})
 
 # Vista para agregar cliente
 @admin_required
@@ -511,7 +442,9 @@ def cliente_agregar(request):
             return redirect('cliente_lista')
     else:
         form = ClienteForm()
-    return render(request, 'clientes/cliente_form.html', {'form': form})
+    
+    is_admin = request.user.is_staff  # Verifica si el usuario es administrador
+    return render(request, 'clientes/cliente_form.html', {'form': form, 'is_admin': is_admin})
 
 # Vista para editar cliente
 @admin_required
@@ -525,18 +458,17 @@ def cliente_editar(request, pk):
             return redirect('cliente_lista')
     else:
         form = ClienteForm(instance=cliente)
-    return render(request, 'clientes/cliente_form.html', {'form': form})
+    
+    is_admin = request.user.is_staff  # Verifica si el usuario es administrador
+    return render(request, 'clientes/cliente_form.html', {'form': form, 'is_admin': is_admin})
 
 # Vista para eliminar cliente
 @admin_required
 @login_required
 def cliente_eliminar(request, pk):
     cliente = get_object_or_404(Cliente, pk=pk)
-    if request.method == 'POST':
-        cliente.delete()
-        return redirect('cliente_lista')
-    return render(request, 'clientes/cliente_confirm_delete.html', {'cliente': cliente})
-
+    is_admin = request.user.is_staff  # Verifica si el usuario es administrador
+    return render(request, 'clientes/cliente_confirm_delete.html', {'cliente': cliente, 'is_admin': is_admin})
 # Función para obtener la cantidad de compras realizadas por cliente
 
 
@@ -586,14 +518,18 @@ def obtener_precio_producto(request):
 @login_required
 def enviar_consulta(request):
     productos_seleccionados = []  # Inicializamos una lista vacía
+
     if request.method == 'POST':
         productos_seleccionados_ids = request.POST.getlist('productos')
         productos_seleccionados = Producto.objects.filter(id__in=productos_seleccionados_ids)
 
         form = ConsultaForm(request.POST)
         if form.is_valid():
+            # Verificar si el usuario tiene un cliente, si no, crearlo
+            cliente, created = Cliente.objects.get_or_create(user=request.user)
+
             consulta = form.save(commit=False)
-            consulta.usuario = request.user.cliente
+            consulta.usuario = cliente  # Ahora sí existe
             consulta.save()
             consulta.productos.set(productos_seleccionados)
 
@@ -622,7 +558,8 @@ def enviar_consulta(request):
 def lista_consultas(request):
     if request.user.is_staff:  # Verificar si el usuario es administrador
         consultas = Consulta.objects.filter(respuesta__isnull=True)  # Mostrar solo consultas sin respuesta
-        return render(request, 'consultas/lista_consultas.html', {'consultas': consultas})
+        is_admin = request.user.is_staff  # Definir is_admin
+        return render(request, 'consultas/lista_consultas.html', {'consultas': consultas, 'is_admin': is_admin})
     else:
         return redirect('index')  # Redirigir a usuarios no administradores
 
@@ -682,8 +619,15 @@ def responder_consulta(request, consulta_id):
             return redirect('lista_consultas')
     else:
         form = RespuestaForm(instance=consulta)
-    return render(request, 'consultas/responder_consulta.html', {'form': form, 'consulta': consulta})
-
+    
+    # Agregar is_admin al contexto
+    is_admin = request.user.is_staff
+    context = {
+        'form': form,
+        'consulta': consulta,
+        'is_admin': is_admin,  # Pasar is_admin al contexto
+    }
+    return render(request, 'consultas/responder_consulta.html', context)
 
 
 # ------------------------------  Vista para Administrador --------------------------------------------------  

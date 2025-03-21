@@ -4,84 +4,102 @@
 {% block title %}Responder Consulta{% endblock %}
 
 {% block content %}
-<style>
-        .product-card {
-            box-shadow: 0 4px 8px rgba(255, 255, 255, 0.1);
-            border: none;
-            max-width: 250px;
-            background-color: white;
-            padding: 3px;
-            
-        }
 
-        .product-card .card-title {
-            font-size: 1.2rem;
-            color: #100;
-            font-weight: bold;
-        }
-
-        .product-card .card-text {
-            font-size: 0.9rem;
-            color: #000;
-            font-weight: bold; /* Texto más grueso */
-        }
-
-        .product-img {
-            max-height: 100px;
-            object-fit: contain;
-        }
-
-        .consulta-info {
-            border: none;
-            padding: 20px;
-            margin-bottom: 20px;
-
-        }
-
-        form {
-            margin-top: 0.6px;
-        }
-        .row.mt-4 { 
-            padding-right: 3px; 
-            padding-left: 3px; 
-        }
-        .textarea.form-control {
-            max-height: 50px; /* Ajusta este valor según sea necesario */
-        }
-        
-</style>
-<div class="container mt-5">
+<div class="container mt-5 position-relative">
     <h2>Responder Consulta</h2>
+
     <div class="consulta-info">
-    <p><strong>Usuario:</strong> {{ consulta.usuario.user.username }}</p>
-    <p><strong>Mensaje:</strong> {{ consulta.mensaje }}</p>
-    </div>
-    <!-- Productos consultados -->
-    <div class="row mt-4 gx-0">
-        <h4>Productos consultados:</h4>
-        {% for producto in consulta.productos.all %}
-        <div class="col-md-4 mb-4">
-            <div class="card product-card">
-                <h5 class="card-title text-center">{{ producto.nombre }}</h5>
-                <img src="{% if producto.imagen %}{{ producto.imagen.url }}{% else %}{% static 'productos/default.png' %}{% endif %}" class="card-img-top product-img" alt="{{ producto.nombre }}">
-                <div class="card-body text-center">
-                    <p class="card-text">
-                        $ {{ producto.precio }}<br>
-                        Stock: {{ producto.cantidad_stock }}<br>
-                        Proveedor: {{ producto.proveedor }}<br>
-                        Categoría: {{ producto.categoria }}
-                    </p>
-                </div>
-            </div>
-        </div>
-        {% endfor %}
+        <p><strong>Usuario:</strong> {{ consulta.usuario.user.username }}</p>
+        <p><strong>Mensaje:</strong> {{ consulta.mensaje }}</p>
     </div>
 
     <!-- Formulario de respuesta -->
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-primary">Enviar Respuesta</button>
-    </form>
+    <div class="formulario-respuesta">
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary boton-respuesta">Enviar Respuesta</button>
+        </form>
+    </div>
+
+    <!-- Productos consultados -->
+    <div class="productos-container">
+        <h4>Productos consultados:</h4>
+        <div class="row mt-4 gx-0">
+            {% for producto in consulta.productos.all %}
+            <div class="col-md-4 mb-4">
+                <div class="card product-card">
+                    <h5 class="card-title text-center">{{ producto.nombre }}</h5>
+                    <img src="{% if producto.imagen %}{{ producto.imagen.url }}{% else %}{% static 'productos/default.png' %}{% endif %}" class="card-img-top product-img" alt="{{ producto.nombre }}">
+                    <div class="card-body text-center">
+                        <p class="card-text">
+                            $ {{ producto.precio }}<br>
+                            Stock: {{ producto.cantidad_stock }}<br>
+                            Proveedor: {{ producto.proveedor }}<br>
+                            Categoría: {{ producto.categoria }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
 </div>
+
+<style>
+    .product-card {
+        box-shadow: 0 4px 8px rgba(255, 255, 255, 0.1);
+        border: none;
+        max-width: 250px;
+        background-color: white;
+        padding: 3px;
+    }
+
+    .product-card .card-title {
+        font-size: 1.2rem;
+        color: #100;
+        font-weight: bold;
+    }
+
+    .product-card .card-text {
+        font-size: 0.9rem;
+        color: #000;
+        font-weight: bold;
+    }
+
+    .product-img {
+        max-height: 100px;
+        object-fit: contain;
+    }
+
+    .consulta-info {
+        border: none;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    /* Alinear botón a la esquina superior derecha */
+    .boton-respuesta {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+    }
+
+    /* Ajustar el área de texto para que esté arriba de los productos */
+    .formulario-respuesta {
+        margin-bottom: 20px;
+    }
+
+    textarea{
+        height: 50px; /* Ajusta este valor según lo que necesites */
+        max-height: 100px;
+        min-height: 100px;
+    }
+    
+
+    .productos-container {
+        margin-top: 20px; /* Espaciado entre el formulario y los productos */
+    }
+</style>
+
 {% endblock %}
